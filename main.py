@@ -79,7 +79,17 @@ def install_spruce(sd_path, zip_path):
 def main():
     root = tk.Tk()
     root.title("spruceUI Control Panel")
-    root.geometry("300x339")
+
+    def fix_window(width=300, height=339):
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+
+        x = (screen_width/2)-(width/2)
+        y = (screen_height/2)-(height/2)
+        root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+    fix_window()
+
     root.resizable(False, False)
 
     # Set app background color
