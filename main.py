@@ -15,7 +15,8 @@ def main():
 
     create_gui(root)
 
-    APP.sd_flasher._main.main_cycle(root)
+    #Calling APP (currently it's the only one we have)
+    APP.sd_flasher._main._main(root)
 
     root.mainloop()
 
