@@ -32,6 +32,7 @@ def create_gui(root):
     # Keep references to images to avoid garbage collection
     root.device_image = tk.PhotoImage(file="res/miyooa30.png")
     root.settings_image = tk.PhotoImage(file="res/settings-uns.png")
+    #root.sd_image = tk.PhotoImage(file="res/sd.png")
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#282828", height=25, pady=0)
@@ -42,6 +43,12 @@ def create_gui(root):
         device_icon.pack(side="left")
         device_icon.bind("<Enter>", on_enter)
         device_icon.bind("<Leave>", on_leave)
+
+        # Add right image to top bar
+        sd_icon = tk.Label(topbar_container, bg="#282828", image=root.settings_image)
+        sd_icon.pack(side="right", padx=0)
+        sd_icon.bind("<Enter>", on_enter)
+        sd_icon.bind("<Leave>", on_leave)
 
         # Add right image to top bar
         settings_icon = tk.Label(topbar_container, bg="#282828", image=root.settings_image)
