@@ -55,7 +55,9 @@ def create_gui(root, page):
         # Clear the current GUI and reload with the new page
         for widget in root.winfo_children():
             widget.destroy()
+
         create_gui(root, new_page)
+
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#282828", height=25, pady=0)
