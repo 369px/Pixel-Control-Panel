@@ -6,7 +6,7 @@ def on_enter_menu(e, page, widget_page): #hovering on menu
     if page != widget_page:
         if not hasattr(e.widget, "original_bg"):
             e.widget.original_bg = e.widget.cget("bg")
-        e.widget.config(bg="#ebdbb2")
+        e.widget.config(bg="#ebdbb2", cursor="@res/hand.cur")
 
 def on_leave_menu(e, page, widget_page):
     # Restore original color only if the widget is not selected
@@ -18,7 +18,7 @@ def on_enter(e):
     # Save original attribute to restore on_leave
     if not hasattr(e.widget, "original_bg"):
         e.widget.original_bg = e.widget.cget("bg")
-    e.widget.config(bg="#ebdbb2")
+    e.widget.config(bg="#ebdbb2", cursor="@res/hand.cur")
 
 def on_leave(e):
     e.widget.config(bg=e.widget.original_bg) # Restore original color
