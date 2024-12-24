@@ -1,14 +1,9 @@
-#import os
-#import subprocess
-#import platform
 import tkinter as tk
-#from tkinter import filedialog, messagebox
-#from tkinter import *
-#from PIL import Image, ImageTk
-#import zipfile
+from UI.gui import create_gui
 
 import APP.sd_flasher._main
-from UI.gui import create_gui
+
+page = "sd"
 
 def main():
     root = tk.Tk()

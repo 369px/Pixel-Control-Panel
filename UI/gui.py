@@ -2,10 +2,14 @@ import tkinter as tk
 
 # Functions to manage hovering on elements
 def on_enter(e):
+    # Save original attribute to restore on_leave
+    if not hasattr(e.widget, "original_bg"):
+        e.widget.original_bg = e.widget.cget("bg")
     e.widget.config(bg="#ebdbb2")
 
 def on_leave(e):
-    e.widget.config(bg="#282828")
+    # Restore original color
+    e.widget.config(bg=e.widget.original_bg)
 
 def create_gui(root):
     root.title("spruceUI Control Panel")
@@ -32,7 +36,7 @@ def create_gui(root):
     # Keep references to images to avoid garbage collection
     root.device_image = tk.PhotoImage(file="res/miyooa30.png")
     root.settings_image = tk.PhotoImage(file="res/settings-uns.png")
-    #root.sd_image = tk.PhotoImage(file="res/sd.png")
+    root.sd_image = tk.PhotoImage(file="res/sd.png")
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#282828", height=25, pady=0)
@@ -45,15 +49,14 @@ def create_gui(root):
         device_icon.bind("<Leave>", on_leave)
 
         # Add right image to top bar
-        sd_icon = tk.Label(topbar_container, bg="#282828", image=root.settings_image)
-        sd_icon.pack(side="right", padx=0)
-        sd_icon.bind("<Enter>", on_enter)
-        sd_icon.bind("<Leave>", on_leave)
-
-        # Add right image to top bar
         settings_icon = tk.Label(topbar_container, bg="#282828", image=root.settings_image)
         settings_icon.pack(side="right", padx=0)
         settings_icon.bind("<Enter>", on_enter)
         settings_icon.bind("<Leave>", on_leave)
+
+        sd_icon = tk.Label(topbar_container, bg="#282828", image=root.sd_image)
+        sd_icon.pack(side="right", padx=0)
+        sd_icon.bind("<Enter>", on_enter)
+        sd_icon.bind("<Leave>", on_leave)
 
     generate_top_bar()
