@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox
-from UI.gui import on_enter, on_leave
+from lib.gui import on_enter, on_leave
 from APP.sd_flasher.detect_sd import detect_sd_card
 from APP.sd_flasher.format_sd import format_sd_card
 from APP.sd_flasher.install_spruce import install_spruce
