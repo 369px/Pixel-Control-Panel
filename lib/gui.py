@@ -1,5 +1,13 @@
 import tkinter as tk
 
+def fix_window(root, width=300, height=339):
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    x = (screen_width / 2) - (width / 2)
+    y = (screen_height / 2) - (height / 2)
+    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
 # Functions to manage hovering on elements
 def on_enter_menu(e, page, widget_page):  # hovering on menu
     # Hover only if the widget is not selected
@@ -25,16 +33,6 @@ def on_leave(e):
 
 def create_gui(root, page, set_page):
     root.title("spruceUI Control Panel")
-
-    def fix_window(width=300, height=339):
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-
-        x = (screen_width / 2) - (width / 2)
-        y = (screen_height / 2) - (height / 2)
-        root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-
-    fix_window()
 
     root.resizable(False, False)
 
