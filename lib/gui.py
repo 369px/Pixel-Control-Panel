@@ -1,6 +1,6 @@
 import tkinter as tk
 
-def fix_window(root, width=300, height=339):
+def fix_window(root, width=300, height=369):
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
@@ -8,8 +8,8 @@ def fix_window(root, width=300, height=339):
     y = (screen_height / 2) - (height / 2)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
-# Functions to manage hovering on elements
-def on_enter_menu(e, page, widget_page):  # hovering on menu
+# Functions to manage hovering on MENU elements (topbar)
+def on_enter_menu(e, page, widget_page):
     # Hover only if the widget is not selected
     if page != widget_page:
         if not hasattr(e.widget, "original_bg"):
@@ -53,11 +53,11 @@ def create_gui(root, page, set_page):
         set_page(new_page)  # Use the set_page function from main.py
 
     def generate_top_bar():
-        topbar_container = tk.Frame(root, bg="#282828", height=25, pady=0)
+        topbar_container = tk.Frame(root, bg="#242424", height=25, pady=0)
         topbar_container.pack(side='top', fill="x", padx=0)
 
         selected_col = "#323232"
-        unselected_col = "#282828"
+        unselected_col = "#242424"
 
         # Section we'll use to change between different devices
         device_icon = tk.Label(topbar_container, bg=unselected_col, image=root.device_image)
