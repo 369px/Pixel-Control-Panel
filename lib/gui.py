@@ -1,4 +1,6 @@
 import tkinter as tk
+from PIL import Image, ImageTk
+import tkinter.font as tkfont
 
 def fix_window(root, width=300, height=369):
     screen_width = root.winfo_screenwidth()
@@ -88,3 +90,36 @@ def create_gui(root, page, set_page):
         connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "connect"))
 
     generate_top_bar()
+
+def create_terminal(root):
+    # Container for logo
+    terminal_canvas = tk.Canvas(root, height=155)
+    terminal_canvas.pack(fill="x", expand=True,pady=(0,0))
+
+    # Load and display the logo image
+    logo_image = Image.open("res/terminal_bg.png")
+    resized_image = logo_image.resize((155, 155))
+
+    root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
+    terminal_canvas.create_image(75, 0, anchor="nw", image=root.logo_img)  # Posiziona l'immagine in alto a sinistra
+
+    return terminal_canvas
+
+def append_terminal_message(terminal, message, x=0, y=0):
+    font_size = 12
+
+    # Create a font object to measure text width
+    font = tkfont.Font(family="Arial", size=font_size)
+    message_width = font.measure(message)
+
+    width = terminal.winfo_width()
+    height = terminal.winfo_height()
+    x = (width // 2) - (message_width // 2)
+    y = height // 2 - font_size // 2
+
+    # Delete the previous text if it exists
+    if hasattr(terminal, 'text_item') and terminal.text_item:
+        terminal.delete(terminal.text_item)
+
+    # Draw the new message on the terminal (canvas) and store the text item ID
+    terminal.text_item = terminal.create_text(x, y, anchor="nw", text=message, font=("Arial", font_size), fill="#ebdbb2")

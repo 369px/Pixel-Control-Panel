@@ -1,29 +1,32 @@
 import tkinter as tk
+import lib.gui as ui
 from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox
-from lib.gui import on_enter, on_leave
+
 from APP.sd_flasher.detect_sd import detect_sd_card
 from APP.sd_flasher.format_sd import format_sd_card
 from APP.sd_flasher.install_spruce import install_spruce
-
 
 def _main(root):
     # Keep references to images to avoid garbage collection
     root.logo_img = None
 
-    # Function to start installation
+    # Funzione per iniziare l'installazione
     def start_installation():
         selected_sd = sd_selector.get()
         if not selected_sd or selected_sd == "No external SD found":
-            messagebox.showerror("Error", "No SD card selected!")
+            ui.append_terminal_message(terminal, "Error: No SD card selected!")
             return
 
         zip_path = filedialog.askopenfilename(title="Select spruceOS ZIP file", filetypes=[("ZIP Files", "*.zip")])
         if not zip_path:
             return
 
+        ui.append_terminal_message(terminal, f"Formatting SD card: {selected_sd}...")
         format_sd_card(selected_sd)
+        ui.append_terminal_message(terminal, f"Installing spruceOS from {zip_path}...")
         install_spruce(selected_sd, zip_path)
+        ui.append_terminal_message(terminal, "Installation completed!")
 
     # Container for SD card selection
     container_sd = tk.Frame(root, height=50)
@@ -37,26 +40,16 @@ def _main(root):
     sd_dropdown.pack(side="left", padx=10, pady=10)
     sd_selector.set(sd_devices[0])
 
-    # Container for logo
-    container_logo = tk.Frame(root)
-    container_logo.pack(fill="x", expand=True)
+    terminal = ui.create_terminal(root)
 
-    # Load and display the logo image
-    logo_image = Image.open("res/icon.png")
-    resized_image = logo_image.resize((155, 155))
-    root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
-    logo_icon = tk.Label(container_logo, image=root.logo_img)
-    logo_icon.pack(fill="both")
-
-    # Container for "Install spruceUI" button
     list_item1 = tk.Frame(root, height=50)
     list_item1.pack(fill="both", expand=True)
 
     update_label = tk.Label(list_item1, text="Update spruce", bg="#282828", fg="#7c6f64", font=("Arial", 16))
     update_label.pack(fill="both", expand=True)
     update_label.bind("<Button-1>", lambda e: start_installation())
-    update_label.bind("<Enter>", on_enter)
-    update_label.bind("<Leave>", on_leave)
+    update_label.bind("<Enter>", ui.on_enter)
+    update_label.bind("<Leave>", ui.on_leave)
 
     list_item2 = tk.Frame(root, height=50)
     list_item2.pack(fill="both", expand=True)
@@ -64,18 +57,17 @@ def _main(root):
     install_label = tk.Label(list_item2, text="Fresh install (first time)", bg="#282828", fg="#7c6f64", font=("Arial", 16))
     install_label.pack(fill="both", expand=True)
     install_label.bind("<Button-1>", lambda e: start_installation())
-    install_label.bind("<Enter>", on_enter)
-    install_label.bind("<Leave>", on_leave)
+    install_label.bind("<Enter>", ui.on_enter)
+    install_label.bind("<Leave>", ui.on_leave)
 
-    # Container for "Exit" button
     container3 = tk.Frame(root, height=50)
     container3.pack(fill="both", expand=True)
 
     label3 = tk.Label(container3, text="Update firmware", bg="#282828", fg="#7c6f64", font=("Arial", 16))
     label3.pack(fill="both", expand=True)
     label3.bind("<Button-1>", lambda e: root.quit())
-    label3.bind("<Enter>", on_enter)
-    label3.bind("<Leave>", on_leave)
+    label3.bind("<Enter>", ui.on_enter)
+    label3.bind("<Leave>", ui.on_leave)
 
     # Container for "Run unbricker" button
     container2 = tk.Frame(root, height=50)
@@ -84,5 +76,5 @@ def _main(root):
     label2 = tk.Label(container2, text="Unbrick", bg="#282828", fg="#7c6f64", font=("Arial", 16))
     label2.pack(fill="both", expand=True)
     label2.bind("<Button-1>", lambda e: start_installation())
-    label2.bind("<Enter>", on_enter)
-    label2.bind("<Leave>", on_leave)
+    label2.bind("<Enter>", ui.on_enter)
+    label2.bind("<Leave>", ui.on_leave)
