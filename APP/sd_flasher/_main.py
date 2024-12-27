@@ -15,7 +15,7 @@ def _main(root):
     def start_installation():
         selected_sd = sd_selector.get()
         if not selected_sd or selected_sd == "No external SD found":
-            ui.append_terminal_message(terminal, "Error: No SD card selected!")
+            ui.append_terminal_message(terminal, "Error: No SD card selected!\nInsert one and retry...")
             return
 
         zip_path = filedialog.askopenfilename(title="Select spruceOS ZIP file", filetypes=[("ZIP Files", "*.zip")])

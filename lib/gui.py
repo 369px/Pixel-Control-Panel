@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
+import textwrap
 
 def fix_window(root, width=300, height=369):
     screen_width = root.winfo_screenwidth()
@@ -106,20 +107,38 @@ def create_terminal(root):
     return terminal_canvas
 
 def append_terminal_message(terminal, message, x=0, y=0):
-    font_size = 12
-
-    # Create a font object to measure text width
-    font = tkfont.Font(family="Arial", size=font_size)
-    message_width = font.measure(message)
-
     width = terminal.winfo_width()
     height = terminal.winfo_height()
-    x = (width // 2) - (message_width // 2)
-    y = height // 2 - font_size // 2
 
-    # Delete the previous text if it exists
-    if hasattr(terminal, 'text_item') and terminal.text_item:
-        terminal.delete(terminal.text_item)
+    # Create a font object to measure text width
+    font_size = 12
+    font = tkfont.Font(family="Arial", size=font_size)
 
-    # Draw the new message on the terminal (canvas) and store the text item ID
-    terminal.text_item = terminal.create_text(x, y, anchor="nw", text=message, font=("Arial", font_size), fill="#ebdbb2")
+    # Calculate max number of chars per line based on max width
+    char_width = font.measure("a")
+    max_width = width
+    max_chars_per_line = max_width // char_width
+
+    # Split message by \n and wrap each line
+    lines = message.split("\n")
+    wrapped_lines = []
+    for line in lines:
+        wrapped_lines.extend(textwrap.wrap(line, width=max_chars_per_line))
+
+    # Delete previous text if it exists
+    if hasattr(terminal, 'text_items') and terminal.text_items:
+        for item in terminal.text_items:
+            terminal.delete(item)
+
+    # Center text block
+    block_height = len(wrapped_lines) * font_size
+    y_start = (height // 2) - (block_height // 2)
+
+    # Draw each row centered
+    terminal.text_items = []
+    for i, line in enumerate(wrapped_lines):
+        y_line = y_start + i * font_size
+        text_item = terminal.create_text(
+            width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
+        )
+        terminal.text_items.append(text_item)
