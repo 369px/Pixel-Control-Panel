@@ -108,6 +108,19 @@ def sd_selector(root):
 
     return sd_select
 
+def create_button(root, text, command, bg ="#282828", fg = "#7c6f64", font = ("Arial", 16)):
+    """Crea un blocco con un bottone personalizzabile."""
+    container = tk.Frame(root, height=50)
+    container.pack(fill="both", expand=True)
+
+    label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
+    label.pack(fill="both", expand=True)
+    label.bind("<Button-1>", command)
+    label.bind("<Enter>", on_enter)
+    label.bind("<Leave>", on_leave)
+
+    return container
+
 def create_terminal(root):
     # Container for logo
     terminal_canvas = tk.Canvas(root, height=155)
