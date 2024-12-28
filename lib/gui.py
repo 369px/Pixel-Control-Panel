@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
 import textwrap
+from lib.sd_card import detect_sd_card
 
 def fix_window(root, width=300, height=369):
     screen_width = root.winfo_screenwidth()
@@ -91,6 +92,21 @@ def create_gui(root, page, set_page):
         connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "connect"))
 
     generate_top_bar()
+
+def sd_selector(root):
+    # Container for SD card selection
+    container_sd = tk.Frame(root, height=50)
+    container_sd.pack(fill="both", expand=True)
+
+    tk.Label(container_sd, text="Select SD Card:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=10)
+
+    sd_select = tk.StringVar()
+    sd_devices = detect_sd_card() or ["No external SD found"]
+    sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
+    sd_dropdown.pack(side="left", padx=10, pady=10)
+    sd_select.set(sd_devices[0])
+
+    return sd_select
 
 def create_terminal(root):
     # Container for logo

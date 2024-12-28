@@ -2,7 +2,7 @@ import os
 import subprocess
 import platform
 from tkinter import messagebox
-from APP.sd_flasher.detect_sd import get_disk_identifier
+from lib.sd_card import get_disk_identifier
 
 def format_sd_card(sd_path):
     """Automatically format SD Card"""
