@@ -7,26 +7,22 @@ def _main(root):
     sd_selector = ui.sd_selector(root)
     terminal = ui.create_terminal(root)
 
-    update_btn = ui.create_button(
-        root,
+    update_btn = ui.create_list_btn(
         text="Update spruce",
-        command=lambda e: start_installation(sd_selector, terminal),
+        command=lambda: start_installation(sd_selector, terminal),
     )
 
-    install_btn = ui.create_button(
-        root,
+    install_btn = ui.create_list_btn(
         text="Fresh install (first time)",
         command=lambda e: start_installation(sd_selector, terminal),
     )
 
-    firmware_btn = ui.create_button(
-        root,
+    firmware_btn = ui.create_list_btn(
         text="Update firmware",
         command=lambda e: root.quit(),
     )
 
-    unbrick_btn = ui.create_button(
-        root,
+    unbrick_btn = ui.create_list_btn(
         text="Unbrick",
         command=lambda e: start_installation(sd_selector, terminal),
     )

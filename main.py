@@ -1,5 +1,6 @@
 import tkinter as tk
 import threading
+from lib.gui_context import context
 
 import lib.gui
 from lib.debug import print_system_info
@@ -41,6 +42,7 @@ def set_page(new_page, root=None):
 
 def main():
     root = tk.Tk()
+    context.set_root(root)  # Set root global context
 
     # Start a separate thread to print system info
     # uncomment next 2 lines to print cpu and memory usage in terminal

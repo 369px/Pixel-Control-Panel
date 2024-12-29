@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
 import textwrap
+from lib.gui_context import context
 from lib.sd_card import detect_sd_card
 
 def fix_window(root, width=300, height=369):
@@ -110,14 +111,16 @@ def sd_selector(root):
 
     return sd_select
 
-def create_button(root, text, command, bg ="#282828", fg = "#7c6f64", font = ("Arial", 16)):
+def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
     """Crea un blocco con un bottone personalizzabile."""
+    root = context.get_root()  # Ottieni automaticamente il root dal contesto
+
     container = tk.Frame(root, height=50)
     container.pack(fill="both", expand=True)
 
     label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
     label.pack(fill="both", expand=True)
-    label.bind("<Button-1>", command)
+    label.bind("<Button-1>", lambda e: command())  # Richiama direttamente la funzione
     label.bind("<Enter>", on_enter)
     label.bind("<Leave>", on_leave)
 
