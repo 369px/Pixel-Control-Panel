@@ -1,3 +1,27 @@
+# RHCP GUI LIBRARY
+# Author(s): 369px
+# CC-BY-NC 4.0
+#
+# Use this library to easily theme the GUI in the spruce fashion.
+# You can implement it by first importing this file like this:
+    #
+    #           import lib.gui as ui
+    #
+#
+# Then, you can call any function in here like this:
+    #
+    #           ui.any_function()
+    #
+#
+# Assign it to a variable for better management:
+    #
+    #           your_var = ui.any_function()
+    #
+#
+# Don't worry, you don't have to understand everything in here
+# I'll do my best to explain things as easily as I can
+# At least ones you'll need.
+
 import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
@@ -94,7 +118,7 @@ def create_gui(root, page, set_page):
 
     generate_top_bar()
 
-def sd_selector(root):
+def create_sd_selector(root):
     # Container for SD card selection
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
@@ -104,10 +128,33 @@ def sd_selector(root):
     sd_select = tk.StringVar()
     sd_devices = detect_sd_card() or ["No external SD found"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="left", padx=(0,5), pady=10)
+    sd_dropdown.pack(side="left", pady=10)
     sd_select.set(sd_devices[0])
 
+    # References to icons
+    root.refresh_icon = Image.open("res/gui/refresh.png")
+    root.eject_icon = Image.open("res/gui/eject.png")
 
+    # Resize the images to fit the label (for example, 32x32 pixels)
+    refresh_icon_resized = root.refresh_icon.resize((16, 16))
+    eject_icon_resized = root.eject_icon.resize((16, 16))
+
+    # Convert the resized images to Tkinter-compatible PhotoImage
+    root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
+    root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
+
+    # Create labels for the icons with resized images
+    refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
+    eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
+
+    eject_icon.pack(side="right", padx=(0,3))
+    eject_icon.bind("<Enter>", lambda e: on_enter(e))
+    eject_icon.bind("<Leave>", lambda e: on_leave(e))
+
+    # Bind events for the icons
+    refresh_icon.pack(side="right", padx=(0,0))
+    refresh_icon.bind("<Enter>", lambda e: on_enter(e))
+    refresh_icon.bind("<Leave>", lambda e: on_leave(e))
 
     return sd_select
 

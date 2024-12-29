@@ -4,7 +4,7 @@ from apps.sd_flasher.install_spruce import install_spruce, start_installation
 def _main(root):
     #root.logo_img = None
 
-    sd_selector = ui.sd_selector(root)
+    sd_selector = ui.create_sd_selector(root)
     terminal = ui.create_terminal(root)
 
     update_btn = ui.create_list_btn(
