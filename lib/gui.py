@@ -53,11 +53,11 @@ def on_leave_menu(e, page, widget_page):
         e.widget.config(bg=e.widget.original_bg)
 
 # hovering everywhere else
-def on_enter(e):
+def on_enter(e, sel_bg="#ebdbb2"):
     # Save original attribute to restore on_leave
     if not hasattr(e.widget, "original_bg"):
         e.widget.original_bg = e.widget.cget("bg")
-    e.widget.config(bg="#ebdbb2", cursor="@res/gui/hand.cur")
+    e.widget.config(bg=sel_bg, cursor="@res/gui/hand.cur")
 
 def on_leave(e):
     e.widget.config(bg=e.widget.original_bg)  # Restore original color
@@ -122,7 +122,7 @@ def create_gui(root, page, set_page):
 
 def refresh_sd_devices(sd_select, sd_dropdown):
     # Get updated SD devices
-    sd_devices = detect_sd_card() or ["No external SD found"]
+    sd_devices = detect_sd_card() or ["Insert SD Card and select it here"]
 
     # Remove old devices from the dropdown
     menu = sd_dropdown['menu']
@@ -137,25 +137,22 @@ def refresh_sd_devices(sd_select, sd_dropdown):
 
 def eject_sd(sd_device, sd_select, sd_dropdown):
     system_os = platform.system()  # Get the operating system
-    if sd_device != "No external SD found":
+    if sd_device != "Insert SD Card and select it here":
         try:
             if system_os == "Linux":
                 # On Linux, use umount to unmount the SD card
                 os.system(f"umount {sd_device}")
                 print(f"{sd_device} successfully unmounted on Linux.")
-                refresh_sd_devices(sd_select, sd_dropdown)
             elif system_os == "Darwin":
                 # On macOS, use diskutil unmount to unmount the SD card
                 os.system(f"diskutil unmount {sd_device}")
                 print(f"{sd_device} successfully unmounted on macOS.")
-                refresh_sd_devices(sd_select, sd_dropdown)
             elif system_os == "Windows":
                 # On Windows, use PowerShell to unmount the device
                 # Assume the SD is a 'D:' type device; adjust the command based on the drive letter
                 # Use "diskpart" to unmount the device or "mountvol" to unmount the drive letter
                 os.system(f"mountvol {sd_device} /p")
                 print(f"{sd_device} successfully unmounted on Windows.")
-                refresh_sd_devices(sd_select, sd_dropdown)
             else:
                 print(f"Operating system {system_os} not supported for unmounting.")
                 return False
@@ -165,49 +162,53 @@ def eject_sd(sd_device, sd_select, sd_dropdown):
     else:
         print("No SD found to unmount.")
 
+    refresh_sd_devices(sd_select, sd_dropdown)
+
 def create_sd_selector(root):
     # SD selection container
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
 
-    tk.Label(container_sd, text="Select SD:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(10, 5))
+    #tk.Label(container_sd, text="Select SD:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(10, 5))
 
     sd_select = tk.StringVar()
-    sd_devices = detect_sd_card() or ["No external SD found"]
+    sd_devices = detect_sd_card() or ["Insert SD Card and select it here"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="left", pady=10)
+    sd_dropdown.pack(side="left", pady=10, padx=(15,0))
     sd_select.set(sd_devices[0])
 
+    sd_dropdown.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+
     # Icon references
-    root.refresh_icon = Image.open("res/gui/refresh.png")
+    #root.refresh_icon = Image.open("res/gui/refresh.png")
     root.eject_icon = Image.open("res/gui/eject.png")
 
     # Resize images to fit the label (e.g., 16x16 pixels)
-    refresh_icon_resized = root.refresh_icon.resize((16, 16))
-    eject_icon_resized = root.eject_icon.resize((16, 16))
+    #refresh_icon_resized = root.refresh_icon.resize((16, 16))
+    eject_icon_resized = root.eject_icon.resize((22, 22))
 
     # Convert resized images to PhotoImage compatible with Tkinter
-    root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
+    #root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
     root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
 
     # Create labels for icons with resized images
-    refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
+    #refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
     eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
 
     # Bind the "refresh" icon click event to the refresh function
-    refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+    #refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
 
     # Bind the "eject" icon click event to unmount the SD card
     eject_icon.bind("<Button-1>", lambda e: eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
 
-    eject_icon.pack(side="right", padx=(0, 3))
-    eject_icon.bind("<Enter>", lambda e: on_enter(e))
+    eject_icon.pack(side="right", padx=(0, 9))
+    eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
     eject_icon.bind("<Leave>", lambda e: on_leave(e))
 
     # Bind the hover event on the "refresh" icon
-    refresh_icon.pack(side="right", padx=(0, 0))
-    refresh_icon.bind("<Enter>", lambda e: on_enter(e))
-    refresh_icon.bind("<Leave>", lambda e: on_leave(e))
+    #refresh_icon.pack(side="right", padx=(0, 0))
+    #refresh_icon.bind("<Enter>", lambda e: on_enter(e))
+    #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
 
     return sd_select
 
