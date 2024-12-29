@@ -122,7 +122,7 @@ def create_gui(root, page, set_page):
 
 def refresh_sd_devices(sd_select, sd_dropdown):
     # Get updated SD devices
-    sd_devices = detect_sd_card() or ["Insert SD Card and select it here"]
+    sd_devices = detect_sd_card() or ["Plug in and select"]
 
     # Remove old devices from the dropdown
     menu = sd_dropdown['menu']
@@ -137,7 +137,7 @@ def refresh_sd_devices(sd_select, sd_dropdown):
 
 def eject_sd(sd_device, sd_select, sd_dropdown):
     system_os = platform.system()  # Get the operating system
-    if sd_device != "Insert SD Card and select it here":
+    if sd_device != "Plug in and select":
         try:
             if system_os == "Linux":
                 # On Linux, use umount to unmount the SD card
@@ -169,15 +169,7 @@ def create_sd_selector(root):
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
 
-    #tk.Label(container_sd, text="Select SD:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(10, 5))
-
-    sd_select = tk.StringVar()
-    sd_devices = detect_sd_card() or ["Insert SD Card and select it here"]
-    sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="left", pady=10, padx=(15,0))
-    sd_select.set(sd_devices[0])
-
-    sd_dropdown.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+    tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
 
     # Icon references
     #root.refresh_icon = Image.open("res/gui/refresh.png")
@@ -201,7 +193,7 @@ def create_sd_selector(root):
     # Bind the "eject" icon click event to unmount the SD card
     eject_icon.bind("<Button-1>", lambda e: eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
 
-    eject_icon.pack(side="right", padx=(0, 9))
+    eject_icon.pack(side="right", padx=(9, 9))
     eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
     eject_icon.bind("<Leave>", lambda e: on_leave(e))
 
@@ -209,6 +201,15 @@ def create_sd_selector(root):
     #refresh_icon.pack(side="right", padx=(0, 0))
     #refresh_icon.bind("<Enter>", lambda e: on_enter(e))
     #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
+
+    sd_select = tk.StringVar()
+    sd_devices = detect_sd_card() or ["Plug in and select"]
+    sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
+    sd_dropdown.pack(side="right", pady=10, padx=(15,0))
+    sd_select.set(sd_devices[0])
+
+    sd_dropdown.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+
 
     return sd_select
 
