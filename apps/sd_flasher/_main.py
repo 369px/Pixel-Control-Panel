@@ -3,7 +3,6 @@ from apps.sd_flasher.install_spruce import install_spruce, start_installation
 
 def _main(root):
     #root.logo_img = None
-
     sd_selector = ui.create_sd_selector(root)
     terminal = ui.create_terminal(root)
 
