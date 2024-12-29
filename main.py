@@ -3,7 +3,7 @@ import threading
 
 import lib.gui
 from lib.debug import print_system_info
-import app.sd_flasher._main
+import apps.sd_flasher._main as sd_app
 
 # Global variables
 global page  # Variable that stores the current page in a string
@@ -12,7 +12,7 @@ window_geometry = None  # To store the current window geometry
 
 def generate_page(root):
     if page == "sd":
-        app.sd_flasher._main._main(root)
+        sd_app._main(root)
     elif page == "settings":
         return
 
