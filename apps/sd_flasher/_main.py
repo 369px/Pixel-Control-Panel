@@ -14,15 +14,15 @@ def _main(root):
 
     install_btn = ui.create_list_btn(
         text="Fresh install (first time)",
-        command=lambda e: start_installation(sd_selector, terminal),
+        command=lambda: start_installation(sd_selector, terminal),
     )
 
     firmware_btn = ui.create_list_btn(
         text="Update firmware",
-        command=lambda e: root.quit(),
+        command=lambda: root.quit(),
     )
 
     unbrick_btn = ui.create_list_btn(
         text="Unbrick",
-        command=lambda e: start_installation(sd_selector, terminal),
+        command=lambda: start_installation(sd_selector, terminal),
     )
