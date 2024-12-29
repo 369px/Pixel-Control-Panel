@@ -121,53 +121,52 @@ def create_gui(root, page, set_page):
     generate_top_bar()
 
 def refresh_sd_devices(sd_select, sd_dropdown):
-    # Ottieni i dispositivi SD aggiornati
+    # Get updated SD devices
     sd_devices = detect_sd_card() or ["No external SD found"]
 
-    # Rimuovi i vecchi dispositivi dalla dropdown
+    # Remove old devices from the dropdown
     menu = sd_dropdown['menu']
     menu.delete(0, 'end')
 
-    # Aggiungi i nuovi dispositivi alla dropdown
+    # Add new devices to the dropdown
     for device in sd_devices:
         menu.add_command(label=device, command=tk._setit(sd_select, device))
 
-    # Imposta il primo elemento come selezionato
+    # Set the first item as selected
     sd_select.set(sd_devices[0])
 
 def eject_sd(sd_device, sd_select, sd_dropdown):
-    system_os = platform.system()  # Ottieni il sistema operativo
+    system_os = platform.system()  # Get the operating system
     if sd_device != "No external SD found":
         try:
             if system_os == "Linux":
-                # Su Linux, usa umount per smontare la SD card
+                # On Linux, use umount to unmount the SD card
                 os.system(f"umount {sd_device}")
-                print(f"{sd_device} smontato correttamente su Linux.")
+                print(f"{sd_device} successfully unmounted on Linux.")
                 refresh_sd_devices(sd_select, sd_dropdown)
             elif system_os == "Darwin":
-                # Su macOS, usa diskutil unmount per smontare la SD card
+                # On macOS, use diskutil unmount to unmount the SD card
                 os.system(f"diskutil unmount {sd_device}")
-                print(f"{sd_device} smontato correttamente su macOS.")
+                print(f"{sd_device} successfully unmounted on macOS.")
                 refresh_sd_devices(sd_select, sd_dropdown)
             elif system_os == "Windows":
-                # Su Windows, usa PowerShell per smontare il dispositivo
-                # Supponiamo che la SD sia un dispositivo di tipo 'D:', adatta il comando in base alla lettera del disco
-                # Usa "diskpart" per smontare il dispositivo o "mountvol" per smontare la lettera del drive
+                # On Windows, use PowerShell to unmount the device
+                # Assume the SD is a 'D:' type device; adjust the command based on the drive letter
+                # Use "diskpart" to unmount the device or "mountvol" to unmount the drive letter
                 os.system(f"mountvol {sd_device} /p")
-                print(f"{sd_device} smontato correttamente su Windows.")
+                print(f"{sd_device} successfully unmounted on Windows.")
                 refresh_sd_devices(sd_select, sd_dropdown)
             else:
-                print(f"Sistema operativo {system_os} non supportato per il smontaggio.")
+                print(f"Operating system {system_os} not supported for unmounting.")
                 return False
         except Exception as e:
-            #messagebox.showerror("Errore", f"Errore durante lo smontaggio di {sd_device}: {e}")
-            print(f"Errore durante lo smontaggio di {sd_device}: {e}")
+            print(f"Error unmounting {sd_device}: {e}")
             return False
     else:
-        print("Nessuna SD trovata per lo smontaggio.")
+        print("No SD found to unmount.")
 
 def create_sd_selector(root):
-    # Container per la selezione della SD
+    # SD selection container
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
 
@@ -179,33 +178,33 @@ def create_sd_selector(root):
     sd_dropdown.pack(side="left", pady=10)
     sd_select.set(sd_devices[0])
 
-    # Riferimenti alle icone
+    # Icon references
     root.refresh_icon = Image.open("res/gui/refresh.png")
     root.eject_icon = Image.open("res/gui/eject.png")
 
-    # Ridimensiona le immagini per adattarle all'etichetta (ad esempio, 16x16 pixel)
+    # Resize images to fit the label (e.g., 16x16 pixels)
     refresh_icon_resized = root.refresh_icon.resize((16, 16))
     eject_icon_resized = root.eject_icon.resize((16, 16))
 
-    # Converte le immagini ridimensionate in PhotoImage compatibili con Tkinter
+    # Convert resized images to PhotoImage compatible with Tkinter
     root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
     root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
 
-    # Crea le etichette per le icone con le immagini ridimensionate
+    # Create labels for icons with resized images
     refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
     eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
 
-    # Collega l'evento di clic sull'icona "refresh" alla funzione di aggiornamento
+    # Bind the "refresh" icon click event to the refresh function
     refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
 
-    # Collega l'evento di clic sull'icona "eject" per smontare la SD card
-    eject_icon.bind("<Button-1>", lambda e: eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Passa il dispositivo SD selezionato
+    # Bind the "eject" icon click event to unmount the SD card
+    eject_icon.bind("<Button-1>", lambda e: eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
 
     eject_icon.pack(side="right", padx=(0, 3))
     eject_icon.bind("<Enter>", lambda e: on_enter(e))
     eject_icon.bind("<Leave>", lambda e: on_leave(e))
 
-    # Collega l'evento di hover sull'icona "refresh"
+    # Bind the hover event on the "refresh" icon
     refresh_icon.pack(side="right", padx=(0, 0))
     refresh_icon.bind("<Enter>", lambda e: on_enter(e))
     refresh_icon.bind("<Leave>", lambda e: on_leave(e))
@@ -213,19 +212,20 @@ def create_sd_selector(root):
     return sd_select
 
 def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
-    """Crea un blocco con un bottone personalizzabile."""
-    root = context.get_root()  # Ottieni automaticamente il root dal contesto
+    """Create a block with a customizable button."""
+    root = context.get_root()  # Automatically get the root from the context
 
     container = tk.Frame(root, height=50)
     container.pack(fill="both", expand=True)
 
     label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
     label.pack(fill="both", expand=True)
-    label.bind("<Button-1>", lambda e: command())  # Richiama direttamente la funzione
+    label.bind("<Button-1>", lambda e: command())  # Directly call the function
     label.bind("<Enter>", on_enter)
     label.bind("<Leave>", on_leave)
 
     return container
+
 
 def create_terminal(root):
     # Container for logo
