@@ -18,7 +18,7 @@ def on_enter_menu(e, page, widget_page):
     if page != widget_page:
         if not hasattr(e.widget, "original_bg"):
             e.widget.original_bg = e.widget.cget("bg")
-        e.widget.config(bg="#ebdbb2", cursor="@res/hand.cur")
+        e.widget.config(bg="#ebdbb2", cursor="@res/gui/hand.cur")
 
 def on_leave_menu(e, page, widget_page):
     # Restore original color only if the widget is not selected
@@ -30,7 +30,7 @@ def on_enter(e):
     # Save original attribute to restore on_leave
     if not hasattr(e.widget, "original_bg"):
         e.widget.original_bg = e.widget.cget("bg")
-    e.widget.config(bg="#ebdbb2", cursor="@res/hand.cur")
+    e.widget.config(bg="#ebdbb2", cursor="@res/gui/hand.cur")
 
 def on_leave(e):
     e.widget.config(bg=e.widget.original_bg)  # Restore original color
@@ -48,10 +48,10 @@ def create_gui(root, page, set_page):
     root.iconphoto(False, icon)
 
     # Keep references to images to avoid garbage collection
-    root.device_image = tk.PhotoImage(file="res/miyooa30.png")
-    root.settings_image = tk.PhotoImage(file="res/settings-uns.png")
-    root.sd_image = tk.PhotoImage(file="res/sd.png")
-    root.connect_image = tk.PhotoImage(file="res/connect.png")
+    root.device_image = tk.PhotoImage(file="res/devices/miyooa30.png")
+    root.settings_image = tk.PhotoImage(file="res/apps/settings-uns.png")
+    root.sd_image = tk.PhotoImage(file="res/apps/sd.png")
+    root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
 
     def on_icon_click(new_page):
         set_page(new_page)  # Use the set_page function from main.py
@@ -98,13 +98,15 @@ def sd_selector(root):
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
 
-    tk.Label(container_sd, text="Select SD Card:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=10)
+    tk.Label(container_sd, text="Select SD:", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(10,5))
 
     sd_select = tk.StringVar()
     sd_devices = detect_sd_card() or ["No external SD found"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="left", padx=10, pady=10)
+    sd_dropdown.pack(side="left", padx=(0,5), pady=10)
     sd_select.set(sd_devices[0])
+
+
 
     return sd_select
 
@@ -127,7 +129,7 @@ def create_terminal(root):
     terminal_canvas.pack(fill="x", expand=True,pady=(0,0))
 
     # Load and display the logo image
-    logo_image = Image.open("res/terminal_bg.png")
+    logo_image = Image.open("res/gui/terminal_bg.png")
     resized_image = logo_image.resize((155, 155))
 
     root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
