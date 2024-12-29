@@ -2,7 +2,7 @@ import zipfile
 import lib.gui as ui
 from tkinter import filedialog
 
-from APP.sd_flasher.format_sd import format_sd_card
+from lib.sd_card import format_sd_card
 
 def install_spruce(sd_path, zip_path, terminal):
     """Install Spruce OS on SD card"""
