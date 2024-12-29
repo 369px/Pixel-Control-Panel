@@ -1,6 +1,5 @@
 import lib.gui as ui
-from APP.sd_flasher.install_spruce import install_spruce
-from APP.sd_flasher.install_spruce import start_installation
+from app.sd_flasher.install_spruce import install_spruce, start_installation
 
 def _main(root):
     #root.logo_img = None
