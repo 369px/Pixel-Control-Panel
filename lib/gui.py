@@ -35,12 +35,12 @@ import lib.sd_card as sd
 #       ui.background("#color")
 #
 # Changes the background color of the app to the desired hex value.
-def background(color):
+def background(color="#282828"):
     """
     Change the background color of the app.
 
     Args:
-        color (str): The desired background color in hex format (e.g., "#000000").
+    color (str): The desired background color in hex format (e.g., "#000000")
     """
     root = context.get_root()  # Automatically get the root from the context
     root.configure(bg=color)
@@ -55,12 +55,16 @@ def background(color):
     update_children_bg(root)
 
 
-def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
-    """Create a block with a customizable button."""
+def create_list_btn(text, command, side="top",bg="#282828", fg="#7c6f64", font=("Arial", 16)):
+    """Create a list block with a customizable button."""
     root = context.get_root()  # Automatically get the root from the context
 
     container = tk.Frame(root, height=50)
-    container.pack(fill="both", expand=True)
+
+    if side == "bottom":
+        container.pack(fill="both", expand=True, side="bottom")
+    else:
+        container.pack(fill="both", expand=True, side="top")
 
     label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
     label.pack(fill="both", expand=True)
@@ -70,12 +74,16 @@ def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16
 
     return container
 
-def create_sd_selector():
+def create_sd_selector(container_side="top"):
     root = context.get_root()
 
     # SD selection container
     container_sd = tk.Frame(root, height=50)
-    container_sd.pack(fill="both", expand=True)
+
+    if container_side == "bottom":
+        container_sd.pack(fill="both", expand=True, side="bottom")
+    else:
+        container_sd.pack(fill="both", expand=True, side="top")
 
     tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
 
@@ -121,12 +129,16 @@ def create_sd_selector():
 
     return sd_select
 
-def create_terminal():
+def create_terminal(container_side="top"):
     root = context.get_root()
 
     # Container for logo
     terminal_canvas = tk.Canvas(root, height=155)
-    terminal_canvas.pack(fill="x", expand=True,pady=(0,0))
+
+    if container_side == "bottom":
+        terminal_canvas.pack(fill="x", expand=True, side="bottom")
+    else:
+        terminal_canvas.pack(fill="x", expand=True, side="top")
 
     # Load and display the logo image
     logo_image = Image.open("res/gui/terminal_bg.png")
@@ -199,12 +211,12 @@ def window_y(val):
     window(300,val)
 
 # Functions to manage hovering on MENU elements (topbar)
-def on_enter_menu(e, page, widget_page):
+def on_enter_menu(e, page, widget_page, sel_bg="#ebdbb2"):
     # Hover only if the widget is not selected
     if page != widget_page:
         if not hasattr(e.widget, "original_bg"):
             e.widget.original_bg = e.widget.cget("bg")
-        e.widget.config(bg="#ebdbb2", cursor="@res/gui/hand.cur")
+        e.widget.config(bg=sel_bg, cursor="@res/gui/hand.cur")
 
 def on_leave_menu(e, page, widget_page):
     # Restore original color only if the widget is not selected
@@ -252,7 +264,7 @@ def create_gui(root, page, set_page):
         # Section we'll use to change between different devices
         device_icon = tk.Label(topbar_container, bg=unselected_col, image=root.device_image)
         device_icon.pack(side="left")
-        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "device"))
+        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "device","#161616"))
         device_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "device"))
 
         # Icons attached to the right are the app icons
