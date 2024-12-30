@@ -13,7 +13,7 @@ def _main(root):
 
     install_btn = ui.create_list_btn(
         text="Fresh install (first time)",
-        command=lambda: start_installation(sd_selector, terminal),
+        command=lambda: ui.fix_window(root, 100,100),
     )
 
     firmware_btn = ui.create_list_btn(

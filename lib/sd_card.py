@@ -2,9 +2,11 @@ import os
 import platform
 import subprocess
 from tkinter import messagebox
+import tkinter
 
 def detect_sd_card():
     """Detect connected SD Cards."""
+
     devices = []
     if platform.system() == "Windows":
         drives = [f"{chr(letter)}:\\" for letter in range(65, 91) if os.path.exists(f"{chr(letter)}:\\")]
@@ -27,6 +29,51 @@ def get_disk_identifier(volume_path):
         if line.startswith('   Device Identifier'):
             return line.split(':')[1].strip()
     return None
+
+def refresh_sd_devices(sd_select, sd_dropdown):
+    # Get updated SD devices
+    sd_devices = detect_sd_card() or ["Plug in and select"]
+
+    # Remove old devices from the dropdown
+    menu = sd_dropdown['menu']
+    menu.delete(0, 'end')
+
+    # Add new devices to the dropdown
+    for device in sd_devices:
+        menu.add_command(label=device, command=tkinter._setit(sd_select, device))
+
+    # Set the first item as selected
+    sd_select.set(sd_devices[0])
+
+def eject_sd(sd_device, sd_select, sd_dropdown):
+    system_os = platform.system()  # Get the operating system
+    if sd_device != "Plug in and select":
+        try:
+            if system_os == "Linux":
+                # On Linux, use umount to unmount the SD card
+                os.system(f"umount {sd_device}")
+                print(f"{sd_device} successfully unmounted on Linux.")
+            elif system_os == "Darwin":
+                # On macOS, use diskutil unmount to unmount the SD card
+                os.system(f"diskutil unmount {sd_device}")
+                print(f"{sd_device} successfully unmounted on macOS.")
+            elif system_os == "Windows":
+                # On Windows, use PowerShell to unmount the device
+                # Assume the SD is a 'D:' type device; adjust the command based on the drive letter
+                # Use "diskpart" to unmount the device or "mountvol" to unmount the drive letter
+                os.system(f"mountvol {sd_device} /p")
+                print(f"{sd_device} successfully unmounted on Windows.")
+            else:
+                print(f"Operating system {system_os} not supported for unmounting.")
+                return False
+        except Exception as e:
+            print(f"Error unmounting {sd_device}: {e}")
+            return False
+    else:
+        print("No SD found to unmount.")
+
+    refresh_sd_devices(sd_select, sd_dropdown)
+
 
 def format_sd_card(sd_path):
     """Automatically format SD Card"""

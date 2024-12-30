@@ -29,7 +29,7 @@ import textwrap
 import os
 import platform
 from lib.gui_context import context
-from lib.sd_card import detect_sd_card
+import lib.sd_card as sd
 
 def fix_window(root, width=300, height=369):
     screen_width = root.winfo_screenwidth()
@@ -120,50 +120,6 @@ def create_gui(root, page, set_page):
 
     generate_top_bar()
 
-def refresh_sd_devices(sd_select, sd_dropdown):
-    # Get updated SD devices
-    sd_devices = detect_sd_card() or ["Plug in and select"]
-
-    # Remove old devices from the dropdown
-    menu = sd_dropdown['menu']
-    menu.delete(0, 'end')
-
-    # Add new devices to the dropdown
-    for device in sd_devices:
-        menu.add_command(label=device, command=tk._setit(sd_select, device))
-
-    # Set the first item as selected
-    sd_select.set(sd_devices[0])
-
-def eject_sd(sd_device, sd_select, sd_dropdown):
-    system_os = platform.system()  # Get the operating system
-    if sd_device != "Plug in and select":
-        try:
-            if system_os == "Linux":
-                # On Linux, use umount to unmount the SD card
-                os.system(f"umount {sd_device}")
-                print(f"{sd_device} successfully unmounted on Linux.")
-            elif system_os == "Darwin":
-                # On macOS, use diskutil unmount to unmount the SD card
-                os.system(f"diskutil unmount {sd_device}")
-                print(f"{sd_device} successfully unmounted on macOS.")
-            elif system_os == "Windows":
-                # On Windows, use PowerShell to unmount the device
-                # Assume the SD is a 'D:' type device; adjust the command based on the drive letter
-                # Use "diskpart" to unmount the device or "mountvol" to unmount the drive letter
-                os.system(f"mountvol {sd_device} /p")
-                print(f"{sd_device} successfully unmounted on Windows.")
-            else:
-                print(f"Operating system {system_os} not supported for unmounting.")
-                return False
-        except Exception as e:
-            print(f"Error unmounting {sd_device}: {e}")
-            return False
-    else:
-        print("No SD found to unmount.")
-
-    refresh_sd_devices(sd_select, sd_dropdown)
-
 def create_sd_selector(root):
     # SD selection container
     container_sd = tk.Frame(root, height=50)
@@ -191,7 +147,7 @@ def create_sd_selector(root):
     #refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
 
     # Bind the "eject" icon click event to unmount the SD card
-    eject_icon.bind("<Button-1>", lambda e: eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
+    eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
 
     eject_icon.pack(side="right", padx=(9, 9))
     eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
@@ -203,12 +159,12 @@ def create_sd_selector(root):
     #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
 
     sd_select = tk.StringVar()
-    sd_devices = detect_sd_card() or ["Plug in and select"]
+    sd_devices = sd.detect_sd_card() or ["Plug in and select"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
     sd_dropdown.pack(side="right", pady=10, padx=(15,0))
     sd_select.set(sd_devices[0])
 
-    sd_dropdown.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+    sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
 
 
     return sd_select
