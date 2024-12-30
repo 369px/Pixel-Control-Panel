@@ -1,19 +1,19 @@
 import lib.gui as ui
-from apps.sd_flasher.install_spruce import install_spruce, start_installation
+from apps.sd_flasher.update import install_spruce, start_update
 
 def _main(root):
-    #root.logo_img = None
-    sd_selector = ui.create_sd_selector(root)
-    terminal = ui.create_terminal(root)
+
+    sd_selector = ui.create_sd_selector()
+    terminal = ui.create_terminal()
 
     update_btn = ui.create_list_btn(
         text="Update spruce",
-        command=lambda: start_installation(sd_selector, terminal),
+        command=lambda: start_update(sd_selector, terminal),
     )
 
     install_btn = ui.create_list_btn(
         text="Fresh install (first time)",
-        command=lambda: ui.fix_window(root, 100,100),
+        command=lambda: ui.window(300,100),
     )
 
     firmware_btn = ui.create_list_btn(
@@ -23,5 +23,5 @@ def _main(root):
 
     unbrick_btn = ui.create_list_btn(
         text="Unbrick",
-        command=lambda: start_installation(sd_selector, terminal),
+        command=lambda: start_update(sd_selector, terminal),
     )

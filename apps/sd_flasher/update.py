@@ -14,10 +14,10 @@ def install_spruce(sd_path, zip_path, terminal):
         ui.append_terminal_message(terminal, "Error while installing: {e}")
 
 # Funzione per iniziare l'installazione
-def start_installation(sd_selector, terminal):
+def start_update(sd_selector, terminal):
     selected_sd = sd_selector.get()
     if not selected_sd or selected_sd == "No external SD found":
-        ui.append_terminal_message(terminal, "Error: No SD card detected!\nPut that shit in dude...")
+        ui.append_terminal_message(terminal, "Error: No SD card detected!\nPlug it in and select it from the list...")
         return
 
     zip_path = filedialog.askopenfilename(title="Select spruceOS ZIP file", filetypes=[("ZIP Files", "*.zip")])

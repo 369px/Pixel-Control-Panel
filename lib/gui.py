@@ -25,19 +25,25 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
-import textwrap
-import os
-import platform
+import textwrap, os, platform
 from lib.gui_context import context
 import lib.sd_card as sd
 
-def fix_window(root, width=300, height=369):
+def window(width=300, height=369):
+    root = context.get_root()
+
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
     x = (screen_width / 2) - (width / 2)
     y = (screen_height / 2) - (height / 2)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+def window_x(val):
+    window(val,369)
+
+def window_y(val):
+    window(300,val)
 
 # Functions to manage hovering on MENU elements (topbar)
 def on_enter_menu(e, page, widget_page):
@@ -120,7 +126,9 @@ def create_gui(root, page, set_page):
 
     generate_top_bar()
 
-def create_sd_selector(root):
+def create_sd_selector():
+    root = context.get_root()
+
     # SD selection container
     container_sd = tk.Frame(root, height=50)
     container_sd.pack(fill="both", expand=True)
@@ -185,7 +193,9 @@ def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16
     return container
 
 
-def create_terminal(root):
+def create_terminal():
+    root = context.get_root()
+
     # Container for logo
     terminal_canvas = tk.Canvas(root, height=155)
     terminal_canvas.pack(fill="x", expand=True,pady=(0,0))

@@ -49,7 +49,7 @@ def main():
     #info_thread = threading.Thread(target=print_system_info, args=(page,), daemon=True)
     #info_thread.start()
 
-    lib.gui.fix_window(root) #center window at startup
+    lib.gui.window() #center window at startup
     lib.gui.create_gui(root, page, lambda new_page: set_page(new_page, root))
     generate_page(root)
 
