@@ -31,6 +31,30 @@ import textwrap, os, platform
 from lib.gui_context import context
 import lib.sd_card as sd
 
+#
+#       ui.background("#color")
+#
+# Changes the background color of the app to the desired hex value.
+def background(color):
+    """
+    Change the background color of the app.
+
+    Args:
+        color (str): The desired background color in hex format (e.g., "#000000").
+    """
+    root = context.get_root()  # Automatically get the root from the context
+    root.configure(bg=color)
+
+    # Update the background of all children widgets
+    def update_children_bg(widget):
+        for child in widget.winfo_children():
+            if isinstance(child, tk.Frame) or isinstance(child, tk.Label) or isinstance(child, tk.Button):
+                child.configure(bg=color)
+            update_children_bg(child)
+
+    update_children_bg(root)
+
+
 def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
     """Create a block with a customizable button."""
     root = context.get_root()  # Automatically get the root from the context

@@ -2,7 +2,6 @@ import lib.gui as ui
 from apps.sd_flasher.update import install_spruce, start_update
 
 def _main(root):
-
     sd_selector = ui.create_sd_selector()
     terminal = ui.create_terminal()
 
