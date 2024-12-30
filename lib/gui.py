@@ -2,7 +2,9 @@
 # Author(s): 369px
 # CC-BY-NC 4.0
 #
-# Use this library to easily theme the GUI in the spruce fashion.
+# Use this library to easily theme GUI in the spruce fashion
+# Read this while looking at the template in: [TODO]
+#
 # You can implement it by first importing this file like this:
     #
     #           import lib.gui as ui
@@ -29,8 +31,136 @@ import textwrap, os, platform
 from lib.gui_context import context
 import lib.sd_card as sd
 
-def window(width=300, height=369):
+def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
+    """Create a block with a customizable button."""
+    root = context.get_root()  # Automatically get the root from the context
+
+    container = tk.Frame(root, height=50)
+    container.pack(fill="both", expand=True)
+
+    label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
+    label.pack(fill="both", expand=True)
+    label.bind("<Button-1>", lambda e: command())  # Directly call the function
+    label.bind("<Enter>", on_enter)
+    label.bind("<Leave>", on_leave)
+
+    return container
+
+def create_sd_selector():
     root = context.get_root()
+
+    # SD selection container
+    container_sd = tk.Frame(root, height=50)
+    container_sd.pack(fill="both", expand=True)
+
+    tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
+
+    # Icon references
+    #root.refresh_icon = Image.open("res/gui/refresh.png")
+    root.eject_icon = Image.open("res/gui/eject.png")
+
+    # Resize images to fit the label (e.g., 16x16 pixels)
+    #refresh_icon_resized = root.refresh_icon.resize((16, 16))
+    eject_icon_resized = root.eject_icon.resize((22, 22))
+
+    # Convert resized images to PhotoImage compatible with Tkinter
+    #root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
+    root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
+
+    # Create labels for icons with resized images
+    #refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
+    eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
+
+    # Bind the "refresh" icon click event to the refresh function
+    #refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
+
+    # Bind the "eject" icon click event to unmount the SD card
+    eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
+
+    eject_icon.pack(side="right", padx=(9, 9))
+    eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
+    eject_icon.bind("<Leave>", lambda e: on_leave(e))
+
+    # Bind the hover event on the "refresh" icon
+    #refresh_icon.pack(side="right", padx=(0, 0))
+    #refresh_icon.bind("<Enter>", lambda e: on_enter(e))
+    #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
+
+    sd_select = tk.StringVar()
+    sd_devices = sd.detect_sd_card() or ["Plug in and select"]
+    sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
+    sd_dropdown.pack(side="right", pady=10, padx=(15,0))
+    sd_select.set(sd_devices[0])
+
+    sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
+
+
+    return sd_select
+
+def create_terminal():
+    root = context.get_root()
+
+    # Container for logo
+    terminal_canvas = tk.Canvas(root, height=155)
+    terminal_canvas.pack(fill="x", expand=True,pady=(0,0))
+
+    # Load and display the logo image
+    logo_image = Image.open("res/gui/terminal_bg.png")
+    resized_image = logo_image.resize((155, 155))
+
+    root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
+    terminal_canvas.create_image(75, 0, anchor="nw", image=root.logo_img)  # Posiziona l'immagine in alto a sinistra
+
+    return terminal_canvas
+
+def append_terminal_message(terminal, message, x=0, y=0):
+    width = terminal.winfo_width()
+    height = terminal.winfo_height()
+
+    # Create a font object to measure text width
+    font_size = 12
+    font = tkfont.Font(family="Arial", size=font_size)
+
+    # Calculate max number of chars per line based on max width
+    char_width = font.measure("a")
+    max_width = width
+    max_chars_per_line = max_width // char_width
+
+    # Split message by \n and wrap each line
+    lines = message.split("\n")
+    wrapped_lines = []
+    for line in lines:
+        wrapped_lines.extend(textwrap.wrap(line, width=max_chars_per_line))
+
+    # Delete previous text if it exists
+    if hasattr(terminal, 'text_items') and terminal.text_items:
+        for item in terminal.text_items:
+            terminal.delete(item)
+
+    # Center text block
+    block_height = len(wrapped_lines) * font_size
+    y_start = (height // 2) - (block_height // 2)
+
+    # Draw each row centered
+    terminal.text_items = []
+    for i, line in enumerate(wrapped_lines):
+        y_line = y_start + i * font_size
+        text_item = terminal.create_text(
+            width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
+        )
+        terminal.text_items.append(text_item)
+
+
+
+#
+#       ui.window(width,height)
+#
+# Changes width and height value of the app window
+# To only change the width call it like this:       ui.window(330)
+# To only change the height call this function:     ui.window_y(400)
+#
+def window(width=300, height=369):
+    root = context.get_root() # Automatically get the root from the context
 
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
@@ -39,9 +169,8 @@ def window(width=300, height=369):
     y = (screen_height / 2) - (height / 2)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
-def window_x(val):
-    window(val,369)
-
+# use this to increse height easily (if you don't' remember width is 300)
+# todo: make it smarter (add custom height/width to current value)
 def window_y(val):
     window(300,val)
 
@@ -125,123 +254,3 @@ def create_gui(root, page, set_page):
         connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "connect"))
 
     generate_top_bar()
-
-def create_sd_selector():
-    root = context.get_root()
-
-    # SD selection container
-    container_sd = tk.Frame(root, height=50)
-    container_sd.pack(fill="both", expand=True)
-
-    tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
-
-    # Icon references
-    #root.refresh_icon = Image.open("res/gui/refresh.png")
-    root.eject_icon = Image.open("res/gui/eject.png")
-
-    # Resize images to fit the label (e.g., 16x16 pixels)
-    #refresh_icon_resized = root.refresh_icon.resize((16, 16))
-    eject_icon_resized = root.eject_icon.resize((22, 22))
-
-    # Convert resized images to PhotoImage compatible with Tkinter
-    #root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
-    root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
-
-    # Create labels for icons with resized images
-    #refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
-    eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
-
-    # Bind the "refresh" icon click event to the refresh function
-    #refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
-
-    # Bind the "eject" icon click event to unmount the SD card
-    eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
-
-    eject_icon.pack(side="right", padx=(9, 9))
-    eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
-    eject_icon.bind("<Leave>", lambda e: on_leave(e))
-
-    # Bind the hover event on the "refresh" icon
-    #refresh_icon.pack(side="right", padx=(0, 0))
-    #refresh_icon.bind("<Enter>", lambda e: on_enter(e))
-    #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
-
-    sd_select = tk.StringVar()
-    sd_devices = sd.detect_sd_card() or ["Plug in and select"]
-    sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="right", pady=10, padx=(15,0))
-    sd_select.set(sd_devices[0])
-
-    sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
-
-
-    return sd_select
-
-def create_list_btn(text, command, bg="#282828", fg="#7c6f64", font=("Arial", 16)):
-    """Create a block with a customizable button."""
-    root = context.get_root()  # Automatically get the root from the context
-
-    container = tk.Frame(root, height=50)
-    container.pack(fill="both", expand=True)
-
-    label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
-    label.pack(fill="both", expand=True)
-    label.bind("<Button-1>", lambda e: command())  # Directly call the function
-    label.bind("<Enter>", on_enter)
-    label.bind("<Leave>", on_leave)
-
-    return container
-
-
-def create_terminal():
-    root = context.get_root()
-
-    # Container for logo
-    terminal_canvas = tk.Canvas(root, height=155)
-    terminal_canvas.pack(fill="x", expand=True,pady=(0,0))
-
-    # Load and display the logo image
-    logo_image = Image.open("res/gui/terminal_bg.png")
-    resized_image = logo_image.resize((155, 155))
-
-    root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
-    terminal_canvas.create_image(75, 0, anchor="nw", image=root.logo_img)  # Posiziona l'immagine in alto a sinistra
-
-    return terminal_canvas
-
-def append_terminal_message(terminal, message, x=0, y=0):
-    width = terminal.winfo_width()
-    height = terminal.winfo_height()
-
-    # Create a font object to measure text width
-    font_size = 12
-    font = tkfont.Font(family="Arial", size=font_size)
-
-    # Calculate max number of chars per line based on max width
-    char_width = font.measure("a")
-    max_width = width
-    max_chars_per_line = max_width // char_width
-
-    # Split message by \n and wrap each line
-    lines = message.split("\n")
-    wrapped_lines = []
-    for line in lines:
-        wrapped_lines.extend(textwrap.wrap(line, width=max_chars_per_line))
-
-    # Delete previous text if it exists
-    if hasattr(terminal, 'text_items') and terminal.text_items:
-        for item in terminal.text_items:
-            terminal.delete(item)
-
-    # Center text block
-    block_height = len(wrapped_lines) * font_size
-    y_start = (height // 2) - (block_height // 2)
-
-    # Draw each row centered
-    terminal.text_items = []
-    for i, line in enumerate(wrapped_lines):
-        y_line = y_start + i * font_size
-        text_item = terminal.create_text(
-            width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
-        )
-        terminal.text_items.append(text_item)
