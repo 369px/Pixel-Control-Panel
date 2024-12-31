@@ -11,14 +11,14 @@ cached_file_path = None
 
 # use spruce.download_file(url)
 
-def start_update(sd_selector, terminal):
+def start_update(sd_selector, display):
     # Start download on a different thread
-    download_thread = threading.Thread(target=_download_update, args=(terminal,))
+    download_thread = threading.Thread(target=_download_update, args=(display,))
     download_thread.start()
 
 import requests
 
-def get_latest_release_link(terminal):
+def get_latest_release_link(display):
     # File url containing last release link information
     url = "https://raw.githubusercontent.com/spruceUI/spruceui.github.io/refs/heads/main/OTA/spruce"
 
@@ -35,17 +35,18 @@ def get_latest_release_link(terminal):
                 return release_link
 
         # If not found, return this
-        ui.append_terminal_message(terminal, "RELEASE LINK not found in GH repo...")
+        display.message("RELEASE LINK not found in GH repo...")
+
         return "RELEASE_LINK not found in the file."
 
     except requests.exceptions.RequestException as e:
-        ui.append_terminal_message(terminal, "Error while fetching update info file...")
+        display.message("Error while fetching update info file...")
         # Gestisce eventuali errori di connessione
         return f"Error while fetching the file: {e}"
 
-def _download_update(terminal):
+def _download_update(display):
     global cached_file_path
-    ui.append_terminal_message(terminal, "Downloading update...")
+    display.message("Downloading update...")
 
     # URL of file to download
     file_url = "https://github.com/spruceUI/spruceOS/releases/download/v3.2.0/spruceV3.2.0.7z"
@@ -77,16 +78,13 @@ def _download_update(terminal):
 
                         # Aggiorna il terminale solo se è trascorso l'intervallo di aggiornamento
                         if downloaded_size - last_update >= update_interval:
-                            ui.append_terminal_message(
-                                terminal,
-                                f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB",
-                            )
+                            display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB",)
                             last_update = downloaded_size
 
-        ui.append_terminal_message(terminal, "Download completed!")
+        display.message("Download completed!")
 
     except requests.exceptions.RequestException as e:
-        ui.append_terminal_message(terminal, f"Error during download: {e}")
+        display.message(f"Error during download: {e}")
 
 # Funzione per ottenere il file salvato
 def get_cached_file_path():
@@ -97,11 +95,11 @@ def get_cached_file_path():
         return None
 
 # Funzione per estrarre il file 7z
-def extract_update(terminal):
+def extract_update(display):
     global cached_file_path
 
     if not cached_file_path or not str(cached_file_path).endswith(".7z"):
-        ui.append_terminal_message(terminal, "No valid file available for extraction.")
+        display.message("No valid file available for extraction.")
         return
 
     try:
@@ -109,8 +107,8 @@ def extract_update(terminal):
             extract_path = filedialog.askdirectory()
             if extract_path:
                 archive.extractall(path=extract_path)
-                ui.append_terminal_message(terminal, f"Files extracted to {extract_path}.")
+                display.message(f"Files extracted to {extract_path}.")
             else:
-                ui.append_terminal_message(terminal, "Extraction canceled.")
+                display.message("Extraction canceled.")
     except py7zr.Bad7zFile:
-        ui.append_terminal_message(terminal, "Invalid 7z file.")
+        display.message("Invalid 7z file.")

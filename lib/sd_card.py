@@ -46,7 +46,7 @@ def refresh_sd_devices(sd_select, sd_dropdown):
     # Set the first item as selected
     sd_select.set(sd_devices[0])
 
-def eject_sd(sd_device, sd_select, sd_dropdown, terminal=0):
+def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()  # Get the operating system
     if sd_device != "Plug in and select":
         try:
@@ -54,7 +54,7 @@ def eject_sd(sd_device, sd_select, sd_dropdown, terminal=0):
                 # On Linux, use umount to unmount the SD card
                 os.system(f"umount {sd_device}")
                 print(f"{sd_device} successfully unmounted on Linux.")
-                ui.append_terminal_message(terminal, f"{sd_device} successfully unmounted on Linux.")
+                terminal.message(f"{sd_device} successfully unmounted on Linux.")
             elif system_os == "Darwin":
                 # On macOS, use diskutil unmount to unmount the SD card
                 os.system(f"diskutil unmount {sd_device}")
@@ -73,7 +73,7 @@ def eject_sd(sd_device, sd_select, sd_dropdown, terminal=0):
             return False
     else:
         print("No SD found to unmount.")
-        ui.append_terminal_message(terminal, "No SD found to unmount.")
+        terminal.message("No SD found to unmount.")
 
     refresh_sd_devices(sd_select, sd_dropdown)
 

@@ -1,26 +1,32 @@
 import lib.gui as ui
+import lib.terminal as terminal
 from apps.sd_flasher.update import start_update
+import tkinter
 
 def _main(root):
-    sd_selector = ui.create_sd_selector()
-    terminal = ui.create_terminal()
-
-    update_btn = ui.create_list_btn(
-        text="Update spruce",
-        command=lambda: start_update(sd_selector, terminal),
-    )
-
-    install_btn = ui.create_list_btn(
-        text="Fresh install (first time)",
-        command=lambda: ui.window(300,100),
+    unbrick_btn = ui.create_list_btn(
+        text="Unbrick",
+        command=lambda: start_update(sd_selector, display),
+        side="bottom",
     )
 
     firmware_btn = ui.create_list_btn(
         text="Update firmware",
         command=lambda: root.quit(),
+        side="bottom",
     )
 
-    unbrick_btn = ui.create_list_btn(
-        text="Unbrick",
-        command=lambda: start_update(sd_selector, terminal),
+    install_btn = ui.create_list_btn(
+        text="Fresh install (first time)",
+        command=lambda: display.message("ciao!"),
+        side="bottom",
     )
+
+    update_btn = ui.create_list_btn(
+        text="Update spruce",
+        command=lambda: start_update(sd_selector, display),
+        side="bottom",
+    )
+
+    display = terminal.create("bottom")
+    sd_selector = ui.create_sd_selector(display,"top")

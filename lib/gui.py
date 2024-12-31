@@ -29,6 +29,7 @@ from PIL import Image, ImageTk
 import tkinter.font as tkfont
 import textwrap, os, platform
 from lib.gui_context import context
+#import lib.terminal as terminal_func
 import lib.sd_card as sd
 from typing import Callable, Tuple, Any
 
@@ -112,7 +113,7 @@ def create_list_btn(
             ui.create_sd_selector("bottom")
 
 '''
-def create_sd_selector(container_side="top"):
+def create_sd_selector(terminal,container_side="top"):
     '''
     Creates an dropdown element showing all connected external devices
 
@@ -144,7 +145,7 @@ def create_sd_selector(container_side="top"):
     eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
 
     # Bind the "eject" icon click event to unmount the SD card
-    eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
+    eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown, terminal))  # Pass the selected SD device
 
     eject_icon.pack(side="right", padx=(9, 9))
     eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
@@ -156,86 +157,10 @@ def create_sd_selector(container_side="top"):
     sd_dropdown.pack(side="right", pady=10, padx=(15,0))
     sd_select.set(sd_devices[0])
 
+
     sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
 
     return sd_select
-
-def create_terminal(container_side="top"):
-    '''
-    Creates a display container that simulates a spruce device, use this to display messages to the user like it is a terminal (with append_terminal_message).
-
-    Args:
-    - side (str) (optional): set to "bottom" to attach element to the bottom
-
-    Returns:
-    - Canvas: A container used as a terminal to display messages
-    '''
-    root = context.get_root()
-
-    # Container for logo
-    terminal_canvas = tk.Canvas(root, height=155)
-
-    if container_side == "bottom":
-        terminal_canvas.pack(fill="x", expand=True, side=container_side)
-    else:
-        terminal_canvas.pack(fill="x", expand=True, side="top")
-
-    # Load and display the logo image
-    logo_image = Image.open("res/gui/terminal_bg.png")
-    resized_image = logo_image.resize((155, 155))
-
-    root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
-    terminal_canvas.create_image(75, 0, anchor="nw", image=root.logo_img)  # Posiziona l'immagine in alto a sinistra
-
-    return terminal_canvas
-
-def append_terminal_message(terminal, message: str, x=0, y=0):
-    '''
-    Clears the display container and shows a new message.
-
-    Args:
-    - terminal (Canvas): terminal where you want to show a message (the one you created with create_terminal)
-    - message (str): the string you want to display
-    - x (int) (optional): x position of the text
-    - y (int) (optional): y position of the text
-    '''
-    width = terminal.winfo_width()
-    height = terminal.winfo_height()
-
-    # Create a font object to measure text width
-    font_size = 12
-    font = tkfont.Font(family="Arial", size=font_size)
-
-    # Calculate max number of chars per line based on max width
-    char_width = font.measure("a")
-    max_width = width
-    max_chars_per_line = max_width // char_width
-
-    # Split message by \n and wrap each line
-    lines = message.split("\n")
-    wrapped_lines = []
-    for line in lines:
-        wrapped_lines.extend(textwrap.wrap(line, width=max_chars_per_line))
-
-    # Delete previous text if it exists
-    if hasattr(terminal, 'text_items') and terminal.text_items:
-        for item in terminal.text_items:
-            terminal.delete(item)
-
-    # Center text block
-    block_height = len(wrapped_lines) * font_size
-    y_start = (height // 2) - (block_height // 2)
-
-    # Draw each row centered
-    terminal.text_items = []
-    for i, line in enumerate(wrapped_lines):
-        y_line = y_start + i * font_size
-        text_item = terminal.create_text(
-            width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
-        )
-        terminal.text_items.append(text_item)
-
-
 
 #
 #       ui.window(width,height)
