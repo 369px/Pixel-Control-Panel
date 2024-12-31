@@ -30,17 +30,19 @@ import tkinter.font as tkfont
 import textwrap, os, platform
 from lib.gui_context import context
 import lib.sd_card as sd
+from typing import Callable, Tuple, Any
 
-#
-#       ui.background("#color")
-#
-# Changes the background color of the app to the desired hex value.
+''' Setting a custom background for an app:
+
+            ui.background("#369369")
+
+'''
 def background(color="#282828"):
     """
-    Change the background color of the app.
+    Changes the background color of an app.
 
     Args:
-    color (str): The desired background color in hex format (e.g., "#000000")
+    - color (str) (optional): The desired background color in hex format (e.g., "#000000")
     """
     root = context.get_root()  # Automatically get the root from the context
     root.configure(bg=color)
@@ -55,8 +57,37 @@ def background(color="#282828"):
     update_children_bg(root)
 
 
-def create_list_btn(text, command, side="top",bg="#282828", fg="#7c6f64", font=("Arial", 16)):
-    """Create a list block with a customizable button."""
+
+''' Creating list buttons
+
+            ui.create_list_btn(
+                text = "Button label",
+                command = lambda: any_function(),
+                side = "top",                      # can be "top" or "bottom"
+                bg = "#282828",                    # Background in hex value
+                fg = "#7c6f64",                    # Button text color
+                font = ("Arial", 16),
+            )
+'''
+def create_list_btn(
+    text: str,
+    command: Callable[..., Any],
+    side="top",
+    bg="#282828",
+    fg="#7c6f64",
+    font: Tuple[str, int] = ("Arial", 16)
+):
+    """
+    Creates a list block with a customizable button
+
+    Args:
+    - text (str): label you see on top of the button
+    - command (function): call to any function, assign it a value like this: command = lambda: any_function()
+    - side (str) (optional): set to "bottom" to attach element to the bottom
+    - bg (str) (optional): button background color in hex value
+    - fg (str) (optional): button text color
+    - font (Tuple[str, int]) (optional): assign it a value like this: font = ("Arial", 20)
+    """
     root = context.get_root()  # Automatically get the root from the context
 
     container = tk.Frame(root, height=50)
@@ -74,7 +105,20 @@ def create_list_btn(text, command, side="top",bg="#282828", fg="#7c6f64", font=(
 
     return container
 
+
+
+''' Creating an SD selector dropdown menu
+
+            ui.create_sd_selector("bottom")
+
+'''
 def create_sd_selector(container_side="top"):
+    '''
+    Creates an dropdown element showing all connected external devices
+
+    Args:
+    - side (str) (optional): set to "bottom" to attach element to the bottom
+    '''
     root = context.get_root()
 
     # SD selection container
@@ -87,24 +131,17 @@ def create_sd_selector(container_side="top"):
 
     tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
 
-    # Icon references
-    #root.refresh_icon = Image.open("res/gui/refresh.png")
+    # Icon reference
     root.eject_icon = Image.open("res/gui/eject.png")
 
-    # Resize images to fit the label (e.g., 16x16 pixels)
-    #refresh_icon_resized = root.refresh_icon.resize((16, 16))
+    # Resize images to fit the label
     eject_icon_resized = root.eject_icon.resize((22, 22))
 
     # Convert resized images to PhotoImage compatible with Tkinter
-    #root.refresh_icon_tk = ImageTk.PhotoImage(refresh_icon_resized)
     root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
 
     # Create labels for icons with resized images
-    #refresh_icon = tk.Label(container_sd, bg="#323232", image=root.refresh_icon_tk)
     eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
-
-    # Bind the "refresh" icon click event to the refresh function
-    #refresh_icon.bind("<Button-1>", lambda e: refresh_sd_devices(sd_select, sd_dropdown))
 
     # Bind the "eject" icon click event to unmount the SD card
     eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown))  # Pass the selected SD device
@@ -112,11 +149,6 @@ def create_sd_selector(container_side="top"):
     eject_icon.pack(side="right", padx=(9, 9))
     eject_icon.bind("<Enter>", lambda e: on_enter(e, "#242424"))
     eject_icon.bind("<Leave>", lambda e: on_leave(e))
-
-    # Bind the hover event on the "refresh" icon
-    #refresh_icon.pack(side="right", padx=(0, 0))
-    #refresh_icon.bind("<Enter>", lambda e: on_enter(e))
-    #refresh_icon.bind("<Leave>", lambda e: on_leave(e))
 
     sd_select = tk.StringVar()
     sd_devices = sd.detect_sd_card() or ["Plug in and select"]
@@ -126,17 +158,25 @@ def create_sd_selector(container_side="top"):
 
     sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
 
-
     return sd_select
 
 def create_terminal(container_side="top"):
+    '''
+    Creates a display container that simulates a spruce device, use this to display messages to the user like it is a terminal (with append_terminal_message).
+
+    Args:
+    - side (str) (optional): set to "bottom" to attach element to the bottom
+
+    Returns:
+    - Canvas: A container used as a terminal to display messages
+    '''
     root = context.get_root()
 
     # Container for logo
     terminal_canvas = tk.Canvas(root, height=155)
 
     if container_side == "bottom":
-        terminal_canvas.pack(fill="x", expand=True, side="bottom")
+        terminal_canvas.pack(fill="x", expand=True, side=container_side)
     else:
         terminal_canvas.pack(fill="x", expand=True, side="top")
 
@@ -149,7 +189,16 @@ def create_terminal(container_side="top"):
 
     return terminal_canvas
 
-def append_terminal_message(terminal, message, x=0, y=0):
+def append_terminal_message(terminal, message: str, x=0, y=0):
+    '''
+    Clears the display container and shows a new message.
+
+    Args:
+    - terminal (Canvas): terminal where you want to show a message (the one you created with create_terminal)
+    - message (str): the string you want to display
+    - x (int) (optional): x position of the text
+    - y (int) (optional): y position of the text
+    '''
     width = terminal.winfo_width()
     height = terminal.winfo_height()
 
@@ -196,6 +245,14 @@ def append_terminal_message(terminal, message, x=0, y=0):
 # To only change the height call this function:     ui.window_y(400)
 #
 def window(width=300, height=369):
+    '''
+    Changes or resets the window's width and height.
+    Call without arguments to reset the window to default value.
+
+    Args:
+    - width (int) (optional): Changes width of the window, pass only this to only change width
+    - height (int) (optional): Changes height of the window
+    '''
     root = context.get_root() # Automatically get the root from the context
 
     screen_width = root.winfo_screenwidth()
@@ -208,6 +265,12 @@ def window(width=300, height=369):
 # use this to increse height easily (if you don't' remember width is 300)
 # todo: make it smarter (add custom height/width to current value)
 def window_y(val):
+    '''
+    Changes the window's height
+
+    Args:
+    - val (int): new height value you want to assign to the window
+    '''
     window(300,val)
 
 # Functions to manage hovering on MENU elements (topbar)
@@ -233,7 +296,7 @@ def on_enter(e, sel_bg="#ebdbb2"):
 def on_leave(e):
     e.widget.config(bg=e.widget.original_bg)  # Restore original color
 
-def create_gui(root, page, set_page):
+def create_gui(root, app, set_app):
     root.title("spruceUI Control Panel")
 
     root.resizable(False, False)
@@ -251,8 +314,8 @@ def create_gui(root, page, set_page):
     root.sd_image = tk.PhotoImage(file="res/apps/sd.png")
     root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
 
-    def on_icon_click(new_page):
-        set_page(new_page)  # Use the set_page function from main.py
+    def on_icon_click(new_app):
+        set_app(new_app)  # Use the set_app function from main.py
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#242424", height=25, pady=0)
@@ -264,13 +327,13 @@ def create_gui(root, page, set_page):
         # Section we'll use to change between different devices
         device_icon = tk.Label(topbar_container, bg=unselected_col, image=root.device_image)
         device_icon.pack(side="left")
-        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "device","#161616"))
-        device_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "device"))
+        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "device","#161616"))
+        device_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "device"))
 
         # Icons attached to the right are the app icons
-        settings_icon = tk.Label(topbar_container, bg=selected_col if page == "settings" else unselected_col, image=root.settings_image)
-        sd_icon = tk.Label(topbar_container, bg=selected_col if page == "sd" else unselected_col, image=root.sd_image)
-        connect_icon = tk.Label(topbar_container, bg=selected_col if page == "connect" else unselected_col, image=root.connect_image)
+        settings_icon = tk.Label(topbar_container, bg=selected_col if app == "settings" else unselected_col, image=root.settings_image)
+        sd_icon = tk.Label(topbar_container, bg=selected_col if app == "sd" else unselected_col, image=root.sd_image)
+        connect_icon = tk.Label(topbar_container, bg=selected_col if app == "connect" else unselected_col, image=root.connect_image)
 
         # Assign callbacks to click events
         settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
@@ -278,15 +341,15 @@ def create_gui(root, page, set_page):
         connect_icon.bind("<Button-1>", lambda e: on_icon_click("connect"))
 
         settings_icon.pack(side="right", padx=0)
-        settings_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "settings"))
-        settings_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "settings"))
+        settings_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "settings"))
+        settings_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "settings"))
 
         sd_icon.pack(side="right", padx=0)
-        sd_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "sd"))
-        sd_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "sd"))
+        sd_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "sd"))
+        sd_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "sd"))
 
         connect_icon.pack(side="right", padx=0)
-        connect_icon.bind("<Enter>", lambda e: on_enter_menu(e, page, "connect"))
-        connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, page, "connect"))
+        connect_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "connect"))
+        connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "connect"))
 
     generate_top_bar()

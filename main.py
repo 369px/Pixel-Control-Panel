@@ -1,31 +1,25 @@
 import tkinter as tk
 import threading
-from lib.gui_context import context
-
 import lib.gui
-from lib.debug import print_system_info
+from lib.gui_context import context
 import apps.sd_flasher._main as sd_app
+from lib.spruce import app, window_geometry, device
 
-# Global variables
-global page  # Variable that stores the current page in a string
-page = "sd"  # We boot up showing the sd_flasher app
-window_geometry = None  # To store the current window geometry
 
 def generate_page(root):
-    if page == "sd":
+    if app == "sd":
         sd_app._main(root)
-    elif page == "settings":
+    elif app == "settings":
         return
 
-def set_page(new_page, root=None):
-    global page, window_geometry
-    page = new_page
-    print(f"Page changed to {page}")  # Debugging
+def set_app(new_app, root=None):
+    global app, window_geometry
+    app = new_app
 
     if root is None:
-        root = tk._default_root  # Restore root if it isn't passed. Not recommended but it works!
+        root = tk._default_root  # Restore root if it isn't passed
 
-    # Save the current geometry of the window
+    # Save the current geometry
     window_geometry = root.geometry()
 
     # Delete all existing widgets
@@ -33,10 +27,10 @@ def set_page(new_page, root=None):
         widget.destroy()
 
     # Regenerate the interface
-    lib.gui.create_gui(root, page, set_page)
+    lib.gui.create_gui(root, app, set_app)
     generate_page(root)
 
-    # Restore the saved geometry
+    # Restore the window geometry
     if window_geometry:
         root.geometry(window_geometry)
 
@@ -49,8 +43,8 @@ def main():
     #info_thread = threading.Thread(target=print_system_info, args=(page,), daemon=True)
     #info_thread.start()
 
-    lib.gui.window() #center window at startup
-    lib.gui.create_gui(root, page, lambda new_page: set_page(new_page, root))
+    lib.gui.window()  # Center window at startup
+    lib.gui.create_gui(root, app, lambda new_app: set_app(new_app, root))
     generate_page(root)
 
     root.mainloop()

@@ -1,31 +1,116 @@
-import zipfile
+import py7zr, threading
+from pathlib import Path
 import lib.gui as ui
 from tkinter import filedialog
-
+import requests
 from lib.sd_card import format_sd_card
+import lib.spruce as spruce
 
-def install_spruce(sd_path, zip_path, terminal):
-    """Install Spruce OS on SD card"""
-    try:
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(sd_path)
-        ui.append_terminal_message(terminal, "Installation complete! SpruceUI has been installed correctly!")
-    except Exception as e:
-        ui.append_terminal_message(terminal, "Error while installing: {e}")
+# Global to store update file path
+cached_file_path = None
 
-# Funzione per iniziare l'installazione
+# use spruce.download_file(url)
+
 def start_update(sd_selector, terminal):
-    selected_sd = sd_selector.get()
-    if not selected_sd or selected_sd == "No external SD found":
-        ui.append_terminal_message(terminal, "Error: No SD card detected!\nPlug it in and select it from the list...")
+    # Start download on a different thread
+    download_thread = threading.Thread(target=_download_update, args=(terminal,))
+    download_thread.start()
+
+import requests
+
+def get_latest_release_link(terminal):
+    # File url containing last release link information
+    url = "https://raw.githubusercontent.com/spruceUI/spruceui.github.io/refs/heads/main/OTA/spruce"
+
+    try:
+        # Download file content
+        response = requests.get(url)
+        response.raise_for_status()  # Verify errors in request
+
+        # Find row that contains 'RELEASE_LINK='
+        for line in response.text.splitlines():
+            if line.startswith("RELEASE_LINK="):
+                # Extract link from row
+                release_link = line.split("=", 1)[1].strip()
+                return release_link
+
+        # If not found, return this
+        ui.append_terminal_message(terminal, "RELEASE LINK not found in GH repo...")
+        return "RELEASE_LINK not found in the file."
+
+    except requests.exceptions.RequestException as e:
+        ui.append_terminal_message(terminal, "Error while fetching update info file...")
+        # Gestisce eventuali errori di connessione
+        return f"Error while fetching the file: {e}"
+
+def _download_update(terminal):
+    global cached_file_path
+    ui.append_terminal_message(terminal, "Downloading update...")
+
+    # URL of file to download
+    file_url = "https://github.com/spruceUI/spruceOS/releases/download/v3.2.0/spruceV3.2.0.7z"
+
+    # Determina il percorso della cartella utente specifica
+    user_folder = Path.home() / ".spruce_updates"
+    user_folder.mkdir(parents=True, exist_ok=True)
+
+    # Salva il file con il nome originale nella cartella dell'utente
+    file_name = file_url.split("/")[-1]
+    cached_file_path = user_folder / file_name
+
+    try:
+        # Scarica il file con monitoraggio del progresso
+        with requests.get(file_url, stream=True) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get("Content-Length", 0))
+            downloaded_size = 0
+
+            chunk_size = 1024  # Dimensione del chunk
+            update_interval = 1024 * 1024  # Aggiorna ogni 1 MB
+            last_update = 0
+
+            with open(cached_file_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        file.write(chunk)
+                        downloaded_size += len(chunk)
+
+                        # Aggiorna il terminale solo se è trascorso l'intervallo di aggiornamento
+                        if downloaded_size - last_update >= update_interval:
+                            ui.append_terminal_message(
+                                terminal,
+                                f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB",
+                            )
+                            last_update = downloaded_size
+
+        ui.append_terminal_message(terminal, "Download completed!")
+
+    except requests.exceptions.RequestException as e:
+        ui.append_terminal_message(terminal, f"Error during download: {e}")
+
+# Funzione per ottenere il file salvato
+def get_cached_file_path():
+    global cached_file_path
+    if cached_file_path:
+        return cached_file_path
+    else:
+        return None
+
+# Funzione per estrarre il file 7z
+def extract_update(terminal):
+    global cached_file_path
+
+    if not cached_file_path or not str(cached_file_path).endswith(".7z"):
+        ui.append_terminal_message(terminal, "No valid file available for extraction.")
         return
 
-    zip_path = filedialog.askopenfilename(title="Select spruceOS ZIP file", filetypes=[("ZIP Files", "*.zip")])
-    if not zip_path:
-        return
-
-    ui.append_terminal_message(terminal, f"Formatting SD card: {selected_sd}...")
-    format_sd_card(selected_sd)
-    ui.append_terminal_message(terminal, f"Installing spruceOS from {zip_path}...")
-    install_spruce(selected_sd, zip_path, terminal)
-    ui.append_terminal_message(terminal, "Installation completed!")
+    try:
+        with py7zr.SevenZipFile(cached_file_path, mode="r") as archive:
+            extract_path = filedialog.askdirectory()
+            if extract_path:
+                archive.extractall(path=extract_path)
+                ui.append_terminal_message(terminal, f"Files extracted to {extract_path}.")
+            else:
+                ui.append_terminal_message(terminal, "Extraction canceled.")
+    except py7zr.Bad7zFile:
+        ui.append_terminal_message(terminal, "Invalid 7z file.")

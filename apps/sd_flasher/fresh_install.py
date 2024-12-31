@@ -1,4 +1,4 @@
-'''
+''' from wiki:
 Windows (10):
 
 Formatting your microSD card:
