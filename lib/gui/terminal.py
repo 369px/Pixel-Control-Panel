@@ -1,6 +1,6 @@
 
 from PIL import Image, ImageTk
-from lib.gui_context import context
+from lib.gui.context import context
 import tkinter as tk
 import tkinter.font as tkfont
 import textwrap

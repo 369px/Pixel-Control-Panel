@@ -28,7 +28,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
 import textwrap, os, platform
-from lib.gui_context import context
+from lib.gui.context import context
 #import lib.terminal as terminal_func
 import lib.sd_card as sd
 from typing import Callable, Tuple, Any

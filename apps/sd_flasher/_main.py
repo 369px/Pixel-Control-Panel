@@ -1,5 +1,4 @@
-import lib.gui as ui
-import lib.terminal as terminal
+from lib.gui import style as ui, terminal
 from apps.sd_flasher.update import start_update
 import tkinter
 

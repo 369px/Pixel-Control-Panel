@@ -1,7 +1,7 @@
 import tkinter as tk
 import threading
-import lib.gui
-from lib.gui_context import context
+import lib.gui.style as ui
+from lib.gui.context import context
 import apps.sd_flasher._main as sd_app
 from lib.spruce import app, window_geometry, device
 
@@ -27,7 +27,7 @@ def set_app(new_app, root=None):
         widget.destroy()
 
     # Regenerate the interface
-    lib.gui.create_gui(root, app, set_app)
+    ui.create_gui(root, app, set_app)
     generate_page(root)
 
     # Restore the window geometry
@@ -43,8 +43,8 @@ def main():
     #info_thread = threading.Thread(target=print_system_info, args=(page,), daemon=True)
     #info_thread.start()
 
-    lib.gui.window()  # Center window at startup
-    lib.gui.create_gui(root, app, lambda new_app: set_app(new_app, root))
+    ui.window()  # Center window at startup
+    ui.create_gui(root, app, lambda new_app: set_app(new_app, root))
     generate_page(root)
 
     root.mainloop()

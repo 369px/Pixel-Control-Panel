@@ -3,7 +3,7 @@ import platform
 import subprocess
 from tkinter import messagebox
 import tkinter
-import lib.gui as ui
+import lib.gui.style as ui
 
 def detect_sd_card():
     """Detect connected SD Cards."""
