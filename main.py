@@ -3,6 +3,7 @@ import threading
 import lib.gui.style as ui
 from lib.gui.context import context
 import apps.sd_flasher._main as sd_app
+import apps.template._main as template_app
 from lib.spruce import app, window_geometry, device
 
 
@@ -11,6 +12,8 @@ def generate_page(root):
         sd_app._main(root)
     elif app == "settings":
         return
+    elif app=="template":
+        template_app._main(root)
 
 def set_app(new_app, root=None):
     global app, window_geometry

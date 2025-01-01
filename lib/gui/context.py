@@ -1,7 +1,20 @@
 # lib/gui_context.py
+# used to manage context and remove need of passing "root" everytime
+# call this:
+    #
+    #  root = context.get_root()
+    #
+# in a function to automatically get the root from the context
+
 import tkinter as tk
 
 class GUIContext:
+    '''
+    Used to manage context and remove need of passing root everytime
+
+    Example:
+    - root = context.get_root()
+    '''
     def __init__(self):
         self.root = None
 

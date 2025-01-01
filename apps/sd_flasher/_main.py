@@ -5,7 +5,7 @@ import tkinter
 def _main(root):
     unbrick_btn = ui.create_list_btn(
         text="Unbrick",
-        command=lambda: start_update(sd_selector, display),
+        command=lambda: display.confirmation("Hello world!"),
         side="bottom",
     )
 

@@ -1,23 +1,34 @@
 
 from PIL import Image, ImageTk
 from lib.gui.context import context
+import lib.gui.style as ui
 import tkinter as tk
 import tkinter.font as tkfont
 import textwrap
 
-# Sottoclasse per il Canvas personalizzato che include 'text_items'
+# Subclass for custom Canvas that includes 'text_items' and other stuff
+# To look like a spruce device
 class TerminalCanvas(tk.Canvas):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         # Inizializza 'text_items' come una lista vuota
         self.text_items = []
 
+    def confirmation(self,message):
+        '''
+        Shows a confirmation message.
+        '''
+        self.message(message)
+        yes = tk.Frame(self)
+        yes.pack(fill="none", expand=False, side="left")
+        label = tk.Label(yes, text="Yes")
+        label.pack(fill="both", expand=True)
+
     def message(self, message: str, x=1, y=1):
         '''
         Clears the display container and shows a new message.
 
         Args:
-        - terminal (Canvas): terminal where you want to show a message (the one you created with create_terminal)
         - message (str): the string you want to display
         - x (int) (optional): x position of the text
         - y (int) (optional): y position of the text
@@ -63,7 +74,7 @@ def create(container_side="top"):
     Creates a display container that simulates a spruce device, use this to display messages to the user like it is a terminal (with append_terminal_message).
 
     Args:
-    - side (str) (optional): set to "bottom" to attach element to the bottom
+    - side (str) (optional): set to "bottom" to move the element to the bottom
 
     Returns:
     - Canvas: A container used as a terminal to display messages
@@ -84,8 +95,5 @@ def create(container_side="top"):
 
     root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
     terminal_canvas.create_image(75, 0, anchor="nw", image=root.logo_img)  # Posiziona l'immagine in alto a sinistra
-
-
-
 
     return terminal_canvas

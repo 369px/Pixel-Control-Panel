@@ -7,7 +7,7 @@
 #
 # You can implement it by first importing this file like this:
     #
-    #           import lib.gui as ui
+    #           import lib.gui.style as ui
     #
 #
 # Then, you can call any function in here like this:
@@ -31,7 +31,7 @@ import textwrap, os, platform
 from lib.gui.context import context
 #import lib.terminal as terminal_func
 import lib.sd_card as sd
-from typing import Callable, Tuple, Any
+from typing import Callable, Tuple, Any, Optional
 
 ''' Setting a custom background for an app:
 
@@ -71,12 +71,13 @@ def background(color="#282828"):
             )
 '''
 def create_list_btn(
-    text: str,
-    command: Callable[..., Any],
+    parent = None,
+    text: str="Label",
+    command: Optional[Callable[..., Any]] = None,
     side="top",
     bg="#282828",
     fg="#7c6f64",
-    font: Tuple[str, int] = ("Arial", 16)
+    font: Tuple[str, int] = ("Arial", 16),
 ):
     """
     Creates a list block with a customizable button
@@ -89,7 +90,10 @@ def create_list_btn(
     - fg (str) (optional): button text color
     - font (Tuple[str, int]) (optional): assign it a value like this: font = ("Arial", 20)
     """
-    root = context.get_root()  # Automatically get the root from the context
+    if parent == None:
+        root = context.get_root()  # Automatically get the root from the context
+    else:
+        root = parent
 
     container = tk.Frame(root, height=50)
 
@@ -100,7 +104,10 @@ def create_list_btn(
 
     label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
     label.pack(fill="both", expand=True)
-    label.bind("<Button-1>", lambda e: command())  # Directly call the function
+
+    # If 'command' is not passed, use a function that does nothing
+    command = command or (lambda: None)
+    label.bind("<Button-1>", lambda e: command())
     label.bind("<Enter>", on_enter)
     label.bind("<Leave>", on_leave)
 
@@ -258,12 +265,12 @@ def create_gui(root, app, set_app):
         # Icons attached to the right are the app icons
         settings_icon = tk.Label(topbar_container, bg=selected_col if app == "settings" else unselected_col, image=root.settings_image)
         sd_icon = tk.Label(topbar_container, bg=selected_col if app == "sd" else unselected_col, image=root.sd_image)
-        connect_icon = tk.Label(topbar_container, bg=selected_col if app == "connect" else unselected_col, image=root.connect_image)
+        connect_icon = tk.Label(topbar_container, bg=selected_col if app == "template" else unselected_col, image=root.connect_image)
 
         # Assign callbacks to click events
         settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
         sd_icon.bind("<Button-1>", lambda e: on_icon_click("sd"))
-        connect_icon.bind("<Button-1>", lambda e: on_icon_click("connect"))
+        connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
 
         settings_icon.pack(side="right", padx=0)
         settings_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "settings"))
@@ -274,7 +281,7 @@ def create_gui(root, app, set_app):
         sd_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "sd"))
 
         connect_icon.pack(side="right", padx=0)
-        connect_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "connect"))
-        connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "connect"))
+        connect_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "template"))
+        connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "template"))
 
     generate_top_bar()
