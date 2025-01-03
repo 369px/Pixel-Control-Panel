@@ -29,7 +29,7 @@ jobs:
       - name: Clean dist directory
         run: |
           echo "Cleaning dist directory..."
-          rm -rf dist/*  # Clean dist directory before build
+          rm -rf dist
 
       - name: Generate .spec file
         run: |
@@ -44,7 +44,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller main.spec
+          pyinstaller -y main.spec  # Usa -y per rimuovere automaticamente la directory dist
 
       - name: Verify output files
         run: |
