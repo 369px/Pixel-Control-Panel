@@ -33,7 +33,8 @@ jobs:
 
       - name: Verify output files
         run: |
-          ls -la dist
+          echo "Listing files in dist/"
+          ls -la dist  # Verifica la presenza di dist/main.app
 
       - name: Install create-dmg on macOS
         run: |
