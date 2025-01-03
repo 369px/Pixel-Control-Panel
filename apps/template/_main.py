@@ -1,8 +1,8 @@
+#OUTDATED, PLEASE IGNORE
+'''
 # First thing you need to do when making an app is import these files
 # from the gui library (still WIP, may change in the future)
 from lib.gui import style as ui, terminal
-
-#
 
 # Then add a _main(root) function which will be where you make your GUI
 def _main(root):
@@ -33,3 +33,4 @@ def _main(root):
         text="Click to show message on terminal",
         command=lambda: display.message("Displaying messages is easy!")
     )
+'''

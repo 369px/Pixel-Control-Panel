@@ -1,31 +1,41 @@
 from lib.gui import style as ui, terminal
+#from lib.gui.button import BButton
 from apps.sd_flasher.update import start_update
-import tkinter
+import apps.sd_flasher.events as events
+import tkinter as tk
 
 def _main(root):
-    unbrick_btn = ui.create_list_btn(
-        text="Unbrick",
-        command=lambda: display.confirmation("Hello world!"),
-        side="bottom",
-    )
-
-    firmware_btn = ui.create_list_btn(
-        text="Update firmware",
-        command=lambda: root.quit(),
-        side="bottom",
-    )
-
-    install_btn = ui.create_list_btn(
-        text="Fresh install (first time)",
-        command=lambda: display.message("ciao!"),
-        side="bottom",
-    )
-
-    update_btn = ui.create_list_btn(
-        text="Update spruce",
-        command=lambda: start_update(sd_selector, display),
-        side="bottom",
-    )
+    menu_container = tk.Frame(root)
+    menu_container.pack(fill="both", expand=True, side="bottom")
 
     display = terminal.create("bottom")
     sd_selector = ui.create_sd_selector(display,"top")
+
+    update_btn = ui.Button(
+        parent=menu_container,
+        text="Update spruce",
+        command=lambda: display.confirmation(
+            "Drop an update file or press 'A' to download the latest release",
+            lambda: start_update(sd_selector, display)
+        )
+    ).create()
+
+    install_btn = ui.Button(
+        parent=menu_container,
+        text="Fresh install (first time)",
+        command=lambda: display.message("ciao!")
+    ).create()
+
+    firmware_btn = ui.Button(
+        parent=menu_container,
+        command=lambda: root.quit()
+    ).create()
+
+    unbrick_btn = ui.Button(
+        parent=menu_container,
+        text="Unbrick",
+        command=lambda: display.confirmation(
+            "Drop an update file or press 'A' to download the latest release",
+            events.update(),
+        )
+    ).create()

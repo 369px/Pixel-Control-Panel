@@ -33,6 +33,79 @@ from lib.gui.context import context
 import lib.sd_card as sd
 from typing import Callable, Tuple, Any, Optional
 
+class Button:
+    ''' Creating buttons. Do:
+
+    button_name = Button( ARGUMENTS... ).create()
+
+    Arguments:
+    1. parent = any_container,
+    - any_container can be any parent container you want to attach this button in. Simplier UI can avoit using this argument
+    2. text = "Button label",
+    - The label you want to display on the button
+    3. command = lambda: any_function(),
+    - any_function() can be any function you want to run when an user clicks on the button, leave lambda there
+    4. side = "top",
+    - add this to put buttons in a list. can be "top" / "bottom"
+    4. grid = (row,column),
+    - add this to put buttons in a grid. like "grid=(0,1)"
+    - [!!!] Remember, you either use "side" or "grid", buttons can't be both in a grid and in a list
+    5. bg = "#282828",
+    - Background in hex value
+    6. fg = "#7c6f64",
+    - Button text color
+    7. font = ("Arial", 16)
+    '''
+    def __init__(
+        self,
+        parent=None,
+        text="Label",
+        command=None,
+        side="top",  # "top" or "bottom" for stack layout
+        grid=None,  # tuple (row, column) for grid layout
+        bg="#282828",
+        fg="#7c6f64",
+        font=("Arial", 16),
+    ):
+        self.parent = parent or context.get_root()  # Use context if parent is not provided
+        self.text = text
+        self.command = command or (lambda: None)  # Default to a no-op if no command provided
+        self.side = side
+        self.grid = grid
+        self.bg = bg
+        self.fg = fg
+        self.font = font
+        self.container = None
+
+    def create(self):
+        """ Creates a customizable button
+        """
+        # Create the container frame for the button
+        self.container = tk.Frame(self.parent, height=50)
+
+        # Use grid or pack separately
+        if self.grid:
+            # Use grid layout if grid_position is defined
+            row, col = self.grid
+            self.container.grid(row=row, column=col, padx=10, pady=5, sticky="nsew")
+        else:
+            # Use pack layout (top or bottom) if no grid_position
+            if self.side == "bottom":
+                self.container.pack(fill="both", expand=True, side="bottom")
+            else:
+                self.container.pack(fill="both", expand=True, side="top")
+
+        # Create the label inside the container (acting as a button)
+        label = tk.Label(self.container, text=self.text, bg=self.bg, fg=self.fg, font=self.font, width=20)
+        label.pack(fill="both", expand=True)
+
+        # Bind the command to the label
+        label.bind("<Button-1>", lambda e: self.command())
+        label.bind("<Enter>", on_enter)
+        label.bind("<Leave>", on_leave)
+
+        return self.container
+
 ''' Setting a custom background for an app:
 
             ui.background("#369369")
@@ -56,63 +129,6 @@ def background(color="#282828"):
             update_children_bg(child)
 
     update_children_bg(root)
-
-
-
-''' Creating list buttons
-
-            ui.create_list_btn(
-                text = "Button label",
-                command = lambda: any_function(),
-                side = "top",                      # can be "top" or "bottom"
-                bg = "#282828",                    # Background in hex value
-                fg = "#7c6f64",                    # Button text color
-                font = ("Arial", 16),
-            )
-'''
-def create_list_btn(
-    parent = None,
-    text: str="Label",
-    command: Optional[Callable[..., Any]] = None,
-    side="top",
-    bg="#282828",
-    fg="#7c6f64",
-    font: Tuple[str, int] = ("Arial", 16),
-):
-    """
-    Creates a list block with a customizable button
-
-    Args:
-    - text (str): label you see on top of the button
-    - command (function): call to any function, assign it a value like this: command = lambda: any_function()
-    - side (str) (optional): set to "bottom" to attach element to the bottom
-    - bg (str) (optional): button background color in hex value
-    - fg (str) (optional): button text color
-    - font (Tuple[str, int]) (optional): assign it a value like this: font = ("Arial", 20)
-    """
-    if parent == None:
-        root = context.get_root()  # Automatically get the root from the context
-    else:
-        root = parent
-
-    container = tk.Frame(root, height=50)
-
-    if side == "bottom":
-        container.pack(fill="both", expand=True, side="bottom")
-    else:
-        container.pack(fill="both", expand=True, side="top")
-
-    label = tk.Label(container, text=text, bg=bg, fg=fg, font=font)
-    label.pack(fill="both", expand=True)
-
-    # If 'command' is not passed, use a function that does nothing
-    command = command or (lambda: None)
-    label.bind("<Button-1>", lambda e: command())
-    label.bind("<Enter>", on_enter)
-    label.bind("<Leave>", on_leave)
-
-    return container
-
 
 
 ''' Creating an SD selector dropdown menu
@@ -161,7 +177,7 @@ def create_sd_selector(terminal,container_side="top"):
     sd_select = tk.StringVar()
     sd_devices = sd.detect_sd_card() or ["Plug in and select"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.pack(side="right", pady=10, padx=(15,0))
+    sd_dropdown.pack(side="right", pady=5, padx=(15,0))
     sd_select.set(sd_devices[0])
 
 
@@ -268,9 +284,9 @@ def create_gui(root, app, set_app):
         connect_icon = tk.Label(topbar_container, bg=selected_col if app == "template" else unselected_col, image=root.connect_image)
 
         # Assign callbacks to click events
-        settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
+        #settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
         sd_icon.bind("<Button-1>", lambda e: on_icon_click("sd"))
-        connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
+        #connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
 
         settings_icon.pack(side="right", padx=0)
         settings_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "settings"))

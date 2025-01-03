@@ -13,7 +13,8 @@ def generate_page(root):
     elif app == "settings":
         return
     elif app=="template":
-        template_app._main(root)
+        #template_app._main(root)
+        return
 
 def set_app(new_app, root=None):
     global app, window_geometry
