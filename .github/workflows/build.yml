@@ -39,7 +39,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller dist/main.spec  # use modifie .spec file to build app
+          pyinstaller --no-sign dist/main.spec  # Disable app signing, damn it apple
 
       - name: Verify output files
         run: |
