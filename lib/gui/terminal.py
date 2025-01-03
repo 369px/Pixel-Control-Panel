@@ -149,7 +149,7 @@ class TerminalCanvas(tk.Canvas):
         terminal_canvas = TerminalCanvas(root, height=155)
 
         # Pack the terminal to the top or bottom as needed
-        terminal_canvas.pack(fill="both", expand=True, side="top", pady=3)
+        terminal_canvas.pack(fill="both", expand=True, side="top", pady=2)
 
         # Load and display the logo image
         logo_image = Image.open("res/gui/terminal_bg.png")
@@ -176,9 +176,9 @@ def create(container_side="top"):
     terminal_canvas = TerminalCanvas(root, height=155)
 
     if container_side == "bottom":
-        terminal_canvas.pack(fill="both", expand=True, side=container_side, pady=3)
+        terminal_canvas.pack(fill="both", expand=True, side=container_side, pady=2)
     else:
-        terminal_canvas.pack(fill="both", expand=True, side="top", pady=3)
+        terminal_canvas.pack(fill="both", expand=True, side="top", pady=2)
 
     # Load and display the logo image
     logo_image = Image.open("res/gui/terminal_bg.png")

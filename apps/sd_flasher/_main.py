@@ -9,6 +9,7 @@ def _main(root):
     menu_container.pack(fill="both", expand=True, side="bottom")
 
     display = terminal.create("bottom")
+
     sd_selector = ui.create_sd_selector(display,"top")
 
     update_btn = ui.Button(
@@ -22,20 +23,15 @@ def _main(root):
 
     install_btn = ui.Button(
         parent=menu_container,
-        text="Fresh install (first time)",
-        command=lambda: display.message("ciao!")
+        text="Fresh Install (first time)",
     ).create()
 
     firmware_btn = ui.Button(
         parent=menu_container,
-        command=lambda: root.quit()
+        text="Update Firmware"
     ).create()
 
     unbrick_btn = ui.Button(
         parent=menu_container,
         text="Unbrick",
-        command=lambda: display.confirmation(
-            "Drop an update file or press 'A' to download the latest release",
-            events.update(),
-        )
     ).create()

@@ -12,7 +12,8 @@ Then you can call any function like this:
 
 Or get global variable like this:
 
-                spruce.app                # returns string of current app
+                spruce.app              # returns name (str) of current app
+                spruce.device           # returns name of current device
 '''
 
 app = "sd" # Stores the name of the app we're currently on

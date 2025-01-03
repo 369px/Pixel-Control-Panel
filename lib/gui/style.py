@@ -33,8 +33,11 @@ from lib.gui.context import context
 import lib.sd_card as sd
 from typing import Callable, Tuple, Any, Optional
 
+topbar_container = None
+bottombar_container = None
+
 class Button:
-    ''' Creating buttons. Do:
+    ''' To create a button do:
 
     button_name = Button( ARGUMENTS... ).create()
 
@@ -301,3 +304,9 @@ def create_gui(root, app, set_app):
         connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "template"))
 
     generate_top_bar()
+
+    def generate_bottom_bar():
+        bottombar_container = tk.Frame(root, bg="#282828", height=9, pady=0)
+        bottombar_container.pack(side='bottom', fill="x", padx=0)
+
+    generate_bottom_bar()

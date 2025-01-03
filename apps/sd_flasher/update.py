@@ -1,8 +1,9 @@
 import py7zr, threading
 from pathlib import Path
-import lib.gui as ui
+import lib.gui.style as ui
 from tkinter import filedialog
 import requests
+import os  # For checking file existence
 from lib.sd_card import format_sd_card
 import lib.spruce as spruce
 
@@ -15,8 +16,6 @@ def start_update(sd_selector, display):
     # Start download on a different thread
     download_thread = threading.Thread(target=_download_update, args=(display,))
     download_thread.start()
-
-import requests
 
 def get_latest_release_link(display):
     # File url containing last release link information
@@ -41,33 +40,39 @@ def get_latest_release_link(display):
 
     except requests.exceptions.RequestException as e:
         display.message("Error while fetching update info file...")
-        # Gestisce eventuali errori di connessione
+        # Handle request errors
         return f"Error while fetching the file: {e}"
 
 def _download_update(display):
     global cached_file_path
+
+    # Check if the file already exists
+    if cached_file_path and os.path.exists(cached_file_path):
+        display.message("Update already downloaded.")
+        return  # Skip download if the file already exists
+
     display.message("Downloading update...")
 
     # URL of file to download
     file_url = "https://github.com/spruceUI/spruceOS/releases/download/v3.2.0/spruceV3.2.0.7z"
 
-    # Determina il percorso della cartella utente specifica
+    # Determine the user's folder path
     user_folder = Path.home() / ".spruce_updates"
     user_folder.mkdir(parents=True, exist_ok=True)
 
-    # Salva il file con il nome originale nella cartella dell'utente
+    # Save the file with the original name in the user's folder
     file_name = file_url.split("/")[-1]
     cached_file_path = user_folder / file_name
 
     try:
-        # Scarica il file con monitoraggio del progresso
+        # Download the file with progress tracking
         with requests.get(file_url, stream=True) as response:
             response.raise_for_status()
             total_size = int(response.headers.get("Content-Length", 0))
             downloaded_size = 0
 
-            chunk_size = 1024  # Dimensione del chunk
-            update_interval = 1024 * 1024  # Aggiorna ogni 1 MB
+            chunk_size = 1024  # Chunk size in bytes
+            update_interval = 3 * 1024 * 1024  # Update message every 3 MBs
             last_update = 0
 
             with open(cached_file_path, "wb") as file:
@@ -76,9 +81,9 @@ def _download_update(display):
                         file.write(chunk)
                         downloaded_size += len(chunk)
 
-                        # Aggiorna il terminale solo se è trascorso l'intervallo di aggiornamento
+                        # Update the terminal only if 3 MBs have been downloaded
                         if downloaded_size - last_update >= update_interval:
-                            display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB",)
+                            display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
                             last_update = downloaded_size
 
         display.message("Download completed!")
@@ -86,7 +91,7 @@ def _download_update(display):
     except requests.exceptions.RequestException as e:
         display.message(f"Error during download: {e}")
 
-# Funzione per ottenere il file salvato
+# Function to get the cached file path
 def get_cached_file_path():
     global cached_file_path
     if cached_file_path:
@@ -94,7 +99,7 @@ def get_cached_file_path():
     else:
         return None
 
-# Funzione per estrarre il file 7z
+# Function to extract the 7z file
 def extract_update(display):
     global cached_file_path
 
