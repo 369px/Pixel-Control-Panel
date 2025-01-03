@@ -31,28 +31,32 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # Step for macOS: Build Application and Create .dmg
       - name: Build Application for macOS
         if: matrix.os == 'macos-latest'
         run: |
           # Crea l'app .app su macOS
           pyinstaller --onefile --windowed --icon=your-icon.ico main.py
 
-          # Installa create-dmg su macOS
+          # Installa create-dmg su macOS (solo su macOS)
           brew install create-dmg
 
           # Crea il file .dmg
           create-dmg dist/main.app dist/main.dmg
 
+      # Step for Windows: Build Application
       - name: Build Application for Windows
         if: matrix.os == 'windows-latest'
         run: |
           pyinstaller --onefile main.py
 
+      # Step for Linux: Build Application
       - name: Build Application for Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
           pyinstaller --onefile main.py
 
+      # Step to Archive Artifacts
       - name: Archive Artifacts
         if: success()
         run: |
@@ -64,6 +68,7 @@ jobs:
             mv dist/main build_artifacts/${{ matrix.os }}-main
           fi
 
+      # Step to Upload Artifacts
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
