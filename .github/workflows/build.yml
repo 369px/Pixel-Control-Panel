@@ -34,9 +34,13 @@ jobs:
       - name: Build Application for macOS
         if: matrix.os == 'macos-latest'
         run: |
+          # Crea l'app .app su macOS
           pyinstaller --onefile --windowed --icon=your-icon.ico main.py
-          # Crea un file .dmg con l'app appena generata
+
+          # Installa create-dmg su macOS
           brew install create-dmg
+
+          # Crea il file .dmg
           create-dmg dist/main.app dist/main.dmg
 
       - name: Build Application for Windows
