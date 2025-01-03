@@ -29,17 +29,17 @@ jobs:
       - name: Generate .spec file
         run: |
           echo "Generating .spec file..."
-          pyinstaller --windowed --icon=res/icon.ico main.py
+          pyinstaller --windowed --icon=res/icon.ico main.py  # Questo genera il file main.spec
 
-            - name: Modify .spec file
-              run: |
-                echo "Modifying .spec file to set macOS minimum version..."
-                sed -i '' 's|}|  "LSMinimumSystemVersion": "10.12", }|' dist/main.spec
+      - name: Modify .spec file
+        run: |
+          echo "Modifying .spec file to set macOS minimum version..."
+          sed -i '' 's|}|  "LSMinimumSystemVersion": "10.12", }|' dist/main.spec  # Aggiunge il parametro per la versione minima
 
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --no-sign dist/main.spec  # Disable app signing, damn it apple
+          pyinstaller --no-sign dist/main.spec  # Disabilita la firma dell'app
 
       - name: Verify output files
         run: |
