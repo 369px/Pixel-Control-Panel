@@ -29,7 +29,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --windowed --icon=res/icon.ico main.py
+          pyinstaller --windowed --icon=res/icon.ico --osx-min-version=10.12 main.py
 
       - name: Verify output files
         run: |
