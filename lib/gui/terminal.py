@@ -11,6 +11,8 @@ class TerminalCanvas(tk.Canvas):
         # Initialize 'text_items' as an empty list
         self.text_items = []
         self.cancelled = False  # Flag to cancel  the action
+        self.cancel_container = None  # Cancel button container
+        self.confirm_container = None  # Confirm button container
 
     def confirmation(self, message, event):
         '''
@@ -18,58 +20,70 @@ class TerminalCanvas(tk.Canvas):
         - "Cancel" with a Cancel icon
         - "Confirm" with a Confirm icon
         '''
-        self.cancelled = False  # Ripristina il flag ogni volta che viene chiamato un nuovo messaggio di conferma
+        self.cancelled = False  # Restore flag when new confirm message is called
 
         self.message(message)
         width = self.winfo_width()
         height = self.winfo_height()
 
-        # Carica le immagini per i pulsanti Cancel e Confirm
-        cancel_image = Image.open("res/gui/icon-b.png")  # Modifica con il percorso corretto
-        confirm_image = Image.open("res/gui/icon-a.png")  # Modifica con il percorso corretto
-
-        # Ridimensiona le immagini a 16x16px
+        # Upload and resize Cancel and Confirm images
+        cancel_image = Image.open("res/gui/icon-b.png")
+        confirm_image = Image.open("res/gui/icon-a.png")
         cancel_image_resized = cancel_image.resize((16, 16))
         confirm_image_resized = confirm_image.resize((16, 16))
 
-        # Converte le immagini in oggetti PhotoImage compatibili con Tkinter
+        # Convert images in PhotoImage objects compatible with Tkinter
         root = context.get_root()
 
         cancel_img_tk = ImageTk.PhotoImage(cancel_image_resized)
-        cancel_container = tk.Frame(self, bd=0)  # Contenitore per il pulsante Cancel
-        cancel_container.place(x=width - 139, y=height - 22, anchor="nw")
-        cancel_img = tk.Label(cancel_container, image=cancel_img_tk)
+        self.cancel_container = tk.Frame(self, bd=0)  # Cancel button container
+        self.cancel_container.place(x=width - 139, y=height - 22, anchor="nw")
+        cancel_img = tk.Label(self.cancel_container, image=cancel_img_tk)
         cancel_img.pack(side="left")
-        cancel_text = tk.Label(cancel_container, text="Cancel", font=("Arial", 12), fg="#7c6f64")
+        cancel_text = tk.Label(self.cancel_container, text="Cancel", font=("Arial", 12), fg="#7c6f64")
         cancel_text.pack(side="left")
 
         confirm_img_tk = ImageTk.PhotoImage(confirm_image_resized)
-        confirm_container = tk.Frame(self, bd=0)  # Contenitore per il pulsante Confirm
-        confirm_img = tk.Label(confirm_container, image=confirm_img_tk)
+        self.confirm_container = tk.Frame(self, bd=0)  # Confirm button container
+        confirm_img = tk.Label(self.confirm_container, image=confirm_img_tk)
         confirm_img.pack(side="left")
-        confirm_text = tk.Label(confirm_container, text="Confirm", font=("Arial", 12), fg="#7c6f64")
+        confirm_text = tk.Label(self.confirm_container, text="Confirm", font=("Arial", 12), fg="#7c6f64")
         confirm_text.pack(side="left")
 
-        confirm_container.place(x=width - 71, y=height - 22, anchor="nw")
+        self.confirm_container.place(x=width - 71, y=height - 22, anchor="nw")
 
-        # Salva i riferimenti per evitare la raccolta dei rifiuti
+        # Save references to avoid garbage collection
         root.cancel_img_tk = cancel_img_tk
         root.confirm_img_tk = confirm_img_tk
 
-        # Collega gli eventi di clic ai pulsanti
-        cancel_container.bind("<Button-1>", lambda e: self._on_cancel())
-        confirm_container.bind("<Button-1>", lambda e: self._on_confirm(event))
+        # Activate button click events
+        self.cancel_container.bind("<Button-1>", lambda e: self._on_cancel())
+        self.confirm_container.bind("<Button-1>", lambda e: self._on_confirm(event))
 
-        # Collega gli eventi della tastiera per Cancel (B) e Confirm (A)
+        # Activate keyboard click events [Cancel (B) / Confirm (A)]
         root.bind("<b>", lambda e: self._on_cancel())
         root.bind("<a>", lambda e: self._on_confirm(event))
 
 
     def _on_cancel(self):
-        '''Handler for cancel action'''
-        self.cancelled = True  # set flag on True when action is cancelled
-        self.message("")
-        print("Action cancelled")  # Log or perform any action upon cancellation.
+            '''Handler for cancel action'''
+            if self.cancelled:
+                print("Action was cancelled earlier, nothing will happen.")
+                return  # Don't execute anything if user clicked cancel
+
+            self.cancelled = True  # set flag on True when action is cancelled
+            print("Action cancelled")  # Log or perform any action upon cancellation.
+            #self.destroy()
+            self.message("")
+
+            # Remove cancel and confirm buttons
+            if self.cancel_container:
+                self.cancel_container.destroy()
+            if self.confirm_container:
+                self.confirm_container.destroy()
+
+            # Recreate terminal as default (gotta look into this)
+            #self.recreate_terminal()
 
     def _on_confirm(self, event):
         '''Handler for confirm action'''
@@ -124,6 +138,27 @@ class TerminalCanvas(tk.Canvas):
                 width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
             )
             self.text_items.append(text_item)
+
+    def recreate_terminal(self):
+        '''
+        Recreate the terminal (without the confirmation buttons).
+        '''
+        root = context.get_root()
+
+        # Custom canvas creation (using TerminalCanvas subclass)
+        terminal_canvas = TerminalCanvas(root, height=155)
+
+        # Pack the terminal to the top or bottom as needed
+        terminal_canvas.pack(fill="both", expand=True, side="top", pady=3)
+
+        # Load and display the logo image
+        logo_image = Image.open("res/gui/terminal_bg.png")
+        resized_image = logo_image.resize((155, 155))
+
+        root.logo_img = ImageTk.PhotoImage(resized_image)  # Store the reference in root
+        terminal_canvas.create_image(75, 10, anchor="nw", image=root.logo_img)
+
+        return terminal_canvas
 
 def create(container_side="top"):
     '''
