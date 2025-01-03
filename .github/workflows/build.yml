@@ -26,10 +26,20 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Generate .spec file
+        run: |
+          echo "Generating .spec file..."
+          pyinstaller --windowed --icon=res/icon.ico main.py  # Questo genera il file main.spec
+
+      - name: Modify .spec file
+        run: |
+          echo "Modifying .spec file to set macOS minimum version..."
+          sed -i '' 's/}\/\//{/"LSMinimumSystemVersion": "10.12",/' dist/main.spec  # Aggiunge il parametro per la versione minima
+
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --windowed --icon=res/icon.ico --osx-min-version=10.12 main.py
+          pyinstaller dist/main.spec  # Usa il file .spec modificato per costruire l'app
 
       - name: Verify output files
         run: |
