@@ -40,7 +40,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --no-sign main.spec  # Disabilita la firma dell'app
+          pyinstaller main.spec  # Usa il file .spec per la build, senza opzione --no-sign
 
       - name: Verify output files
         run: |
