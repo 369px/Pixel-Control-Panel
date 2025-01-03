@@ -29,7 +29,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --onefile --windowed --icon=your-icon.ico main.py
+          pyinstaller --onefile --windowed --icon=res/icon.ico main.py
 
       - name: Install create-dmg on macOS
         run: |
