@@ -29,7 +29,7 @@ jobs:
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller --onefile --windowed --icon=res/icon.ico main.py
+          pyinstaller --windowed --icon=res/icon.ico main.py  # Rimuovi --onefile
 
       - name: Verify output files
         run: |
@@ -50,7 +50,7 @@ jobs:
       - name: Create .dmg for macOS
         run: |
           echo "Creating .dmg file..."
-          create-dmg dist/main.app dist/main_output
+          create-dmg dist/main.app dist/main_output.dmg
 
       - name: Archive macOS Artifacts
         run: |
