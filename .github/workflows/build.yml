@@ -23,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x" # Usa la versione di Python che preferisci
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
@@ -44,5 +44,5 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: builds
+          name: builds-${{ github.run_id }} # ADD ID of run to make unique name
           path: build_artifacts/
