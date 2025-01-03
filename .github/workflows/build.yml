@@ -44,5 +44,5 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: builds-${{ github.run_id }} # ADD ID of run to make unique name
+          name: builds-${{ matrix.os }}-${{ github.run_id }}
           path: build_artifacts/
