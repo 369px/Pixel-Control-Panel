@@ -26,21 +26,25 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Clean dist directory
+        run: |
+          echo "Cleaning dist directory..."
+          rm -rf dist/*  # Clean dist directory before build
+
       - name: Generate .spec file
         run: |
           echo "Generating .spec file..."
-          pyinstaller --windowed --icon=res/icon.ico main.py  # Questo genera il file main.spec
+          pyinstaller --windowed --icon=res/icon.ico main.py
 
       - name: Modify .spec file
         run: |
           echo "Modifying .spec file to set macOS minimum version..."
-          # Usa il percorso corretto per il file .spec, che è nella directory principale
-          sed -i '' 's|}|  "LSMinimumSystemVersion": "10.12", }|' main.spec  # Aggiunge il parametro per la versione minima
+          sed -i '' 's|}|  "LSMinimumSystemVersion": "10.12", }|' main.spec
 
       - name: Build Application for macOS
         run: |
           echo "Building macOS application..."
-          pyinstaller main.spec  # Usa il file .spec per la build, senza opzione --no-sign
+          pyinstaller main.spec
 
       - name: Verify output files
         run: |
