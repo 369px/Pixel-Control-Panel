@@ -31,21 +31,32 @@ jobs:
           echo "Building macOS application..."
           pyinstaller --onefile --windowed --icon=res/icon.ico main.py
 
+      - name: Verify output files
+        run: |
+          ls -la dist
+
       - name: Install create-dmg on macOS
         run: |
           echo "Installing create-dmg..."
           brew install create-dmg
 
+      - name: Check if main.app exists
+        run: |
+          if [ ! -d "dist/main.app" ]; then
+            echo "Error: dist/main.app not found!"
+            exit 1
+          fi
+
       - name: Create .dmg for macOS
         run: |
           echo "Creating .dmg file..."
-          create-dmg dist/main.app dist/main.dmg
+          create-dmg dist/main.app dist/main_output.dmg
 
       - name: Archive macOS Artifacts
         run: |
           mkdir -p build_artifacts
           mv dist/main.app build_artifacts/macos-main.app
-          mv dist/main.dmg build_artifacts/macos-main.dmg
+          mv dist/main_output.dmg build_artifacts/macos-main.dmg
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
