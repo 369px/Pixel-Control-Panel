@@ -23,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Usa la versione di Python che preferisci
+          python-version: "3.x" # Usa la versione di Python che preferisci
 
       - name: Install dependencies
         run: |
@@ -34,15 +34,15 @@ jobs:
       - name: Build Application
         run: |
           pyinstaller --onefile main.py
-          
+
       - name: Archive Artifacts
         if: success()
         run: |
           mkdir -p build_artifacts
           mv dist/main build_artifacts/${{ matrix.os }}-main
-          
+
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: builds
           path: build_artifacts/
