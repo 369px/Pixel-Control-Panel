@@ -42,7 +42,7 @@ jobs:
           mv dist/main build_artifacts/${{ matrix.os }}-main
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: builds
           path: build_artifacts/
