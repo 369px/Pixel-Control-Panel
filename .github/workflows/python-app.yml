@@ -37,17 +37,15 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
-    # Ho rimosso il passo "Test with pytest" qui
-
     - name: Build Executable using PyInstaller
       run: |
         # Crea il file eseguibile per ciascun sistema operativo
         if [ "$RUNNER_OS" == "Linux" ]; then
-          pyinstaller --onefile --distpath=./dist/linux dist_script.py
+          pyinstaller --onefile --distpath=./dist/linux main.py
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          pyinstaller --onefile --distpath=./dist/mac dist_script.py
+          pyinstaller --onefile --distpath=./dist/mac main.py
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          pyinstaller --onefile --distpath=./dist/windows dist_script.py
+          pyinstaller --onefile --distpath=./dist/windows main.py
         fi
 
     - name: Upload build artifacts
