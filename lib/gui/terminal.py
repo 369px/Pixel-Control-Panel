@@ -8,11 +8,13 @@ import textwrap
 class TerminalCanvas(tk.Canvas):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.config(bd=0, highlightthickness=0)  # Rimuovi i bordi
         # Initialize 'text_items' as an empty list
         self.text_items = []
-        self.cancelled = False  # Flag to cancel  the action
+        self.cancelled = False  # Flag to cancel the action
         self.cancel_container = None  # Cancel button container
         self.confirm_container = None  # Confirm button container
+        self.input_entry = None
 
     def confirmation(self, message, event):
         '''
@@ -20,6 +22,8 @@ class TerminalCanvas(tk.Canvas):
         - "Cancel" with a Cancel icon
         - "Confirm" with a Confirm icon
         '''
+
+        self._on_cancel()
         self.cancelled = False  # Restore flag when new confirm message is called
 
         self.message(message)
@@ -66,24 +70,35 @@ class TerminalCanvas(tk.Canvas):
 
 
     def _on_cancel(self):
-            '''Handler for cancel action'''
-            if self.cancelled:
-                print("Action was cancelled earlier, nothing will happen.")
-                return  # Don't execute anything if user clicked cancel
+        '''Handler for cancel action'''
 
-            self.cancelled = True  # set flag on True when action is cancelled
-            print("Action cancelled")  # Log or perform any action upon cancellation.
-            #self.destroy()
-            self.message("")
 
-            # Remove cancel and confirm buttons
-            if self.cancel_container:
-                self.cancel_container.destroy()
-            if self.confirm_container:
-                self.confirm_container.destroy()
+        if self.cancelled:
+            print("Action was cancelled earlier, nothing will happen.")
+            return  # Don't execute anything if user clicked cancel
 
-            # Recreate terminal as default (gotta look into this)
-            #self.recreate_terminal()
+        self.cancelled = True  # set flag to True when action is cancelled
+        print("Action cancelled")  # Log or perform any action upon cancellation.
+
+        # Remove cancel and confirm buttons
+        if self.cancel_container:
+            self.cancel_container.destroy()
+        if self.confirm_container:
+            self.confirm_container.destroy()
+        if self.input_entry:
+            self.input_entry.destroy()
+
+        # Clear the message and remove buttons
+        self.message("")
+
+        # Unbind keyboard keys (Cancel - 'B' and Confirm - 'A')
+        root = context.get_root()
+        root.unbind("<b>")
+        root.unbind("<a>")
+
+        # Optionally, you can also remove other handlers or reset other things here.
+        # For instance, remove other event bindings or perform cleanup.
+
 
     def _on_confirm(self, event):
         '''Handler for confirm action'''
@@ -94,6 +109,49 @@ class TerminalCanvas(tk.Canvas):
         print("Action confirmed")  # Log or perform any action upon confirmation.
         event()
 
+    def user_input(self, message: str, callback, x=1, y=1):
+        """
+        Displays a message and an input container (Entry) to the user,
+        Returns input only when user clicks "Enter".
+
+        Args:
+        - message (str): message to view
+        - callback (function): function to call when user clicks enter
+        - x (int) (optional): text x position
+        - y (int) (optional): text y position
+        """
+        self._on_cancel()
+        self.cancelled = False
+        width = self.winfo_width()
+        height = self.winfo_height()
+
+        # Creates a font for the message
+        font_size = 14
+        font = tkfont.Font(family="Arial", size=font_size)
+
+        # Creates the message
+        self.message(message, x, y)
+
+        # Create input field for password (showing "*" characters for security)
+        self.input_var = tk.StringVar()
+        self.input_entry = tk.Entry(self, textvariable=self.input_var, font=("Arial", font_size), bd=1, highlightthickness=1, show='*')  # Hide text with '*'
+        self.input_entry.place(x=width // 2, y=y + 125, anchor="center")
+
+        # callback function that runs when user clicks "Enter"
+        def on_enter(event):
+            user_input = self.input_var.get()
+            self._on_cancel()
+            callback(user_input)  # runs callback with user input
+
+        # Bind per la pressione del tasto "Enter"
+        self.input_entry.bind("<Return>", on_enter)
+
+        # Impostare il focus sull'input per facilitare la digitazione
+        self.input_entry.focus()
+
+
+
+
     def message(self, message: str, x=1, y=1):
         '''
         Clears the display container and shows a new message.
@@ -103,6 +161,7 @@ class TerminalCanvas(tk.Canvas):
         - x (int) (optional): x position of the text
         - y (int) (optional): y position of the text
         '''
+        self.cancelled = False
         width = self.winfo_width()
         height = self.winfo_height()
 
@@ -138,6 +197,7 @@ class TerminalCanvas(tk.Canvas):
                 width // 2, y_line, text=line, font=("Arial", font_size), fill="#ebdbb2", anchor="center"
             )
             self.text_items.append(text_item)
+
 
     def recreate_terminal(self):
         '''

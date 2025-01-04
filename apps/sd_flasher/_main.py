@@ -1,6 +1,7 @@
 from lib.gui import style as ui, terminal
 #from lib.gui.button import BButton
 from apps.sd_flasher.update import start_update
+from apps.sd_flasher.unbrick import flash_unbricker
 import apps.sd_flasher.events as events
 import tkinter as tk
 
@@ -11,7 +12,7 @@ def _main(root):
     display = terminal.create("bottom")
 
     sd_selector = ui.create_sd_selector(display,"top")
-
+    '''
     update_btn = ui.Button(
         parent=menu_container,
         text="Update spruce",
@@ -28,10 +29,17 @@ def _main(root):
 
     firmware_btn = ui.Button(
         parent=menu_container,
-        text="Update Firmware"
+        text="Update Firmware",
+        command=lambda: display.user_input(
+            "Input password to format SD Card",
+            lambda: flash_unbricker(sd_selector, display))
     ).create()
-
+    '''
     unbrick_btn = ui.Button(
         parent=menu_container,
         text="Unbrick",
+        command=lambda: display.confirmation(
+            "Drop an unbricker image or\npress 'A' to download / install it",
+            lambda: flash_unbricker(sd_selector, display)
+        )
     ).create()
