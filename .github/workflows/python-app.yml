@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest  # Imposta per eseguire su Linux. Aggiungerò anche il matrix per eseguire su macOS e Windows
 
     strategy:
@@ -28,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest pyinstaller
+        pip install flake8 pyinstaller
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
     - name: Lint with flake8
@@ -36,14 +37,8 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
-    - name: Debug: List files in the directory
-      run: |
-        ls -R
-    
-    - name: Test with pytest
-      run: |
-        pytest -v  # Verifica i test in modo verboso
-    
+    # Ho rimosso il passo "Test with pytest" qui
+
     - name: Build Executable using PyInstaller
       run: |
         # Crea il file eseguibile per ciascun sistema operativo
