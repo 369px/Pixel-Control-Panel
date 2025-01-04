@@ -48,8 +48,26 @@ jobs:
           pyinstaller --onefile --distpath=./dist/windows main.py
         fi
 
+    - name: Check if build exists before uploading
+      run: |
+        if [ -f ./dist/linux/main ]; then
+          echo "Linux build exists"
+        else
+          echo "Linux build not found"
+        fi
+        if [ -f ./dist/mac/main ]; then
+          echo "macOS build exists"
+        else
+          echo "macOS build not found"
+        fi
+        if [ -f ./dist/windows/main.exe ]; then
+          echo "Windows build exists"
+        else
+          echo "Windows build not found"
+        fi
+
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: app-build
         path: ./dist
