@@ -66,8 +66,20 @@ jobs:
           echo "Windows build not found"
         fi
 
-    - name: Upload build artifacts
+    - name: Upload Linux build
       uses: actions/upload-artifact@v4
       with:
-        name: app-build
-        path: ./dist
+        name: linux-build-${{ github.run_id }}
+        path: ./dist/linux
+
+    - name: Upload macOS build
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build-${{ github.run_id }}
+        path: ./dist/mac
+
+    - name: Upload Windows build
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build-${{ github.run_id }}
+        path: ./dist/windows
