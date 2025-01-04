@@ -11,8 +11,7 @@ permissions:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest  # Imposta per eseguire su Linux. Aggiungerò anche il matrix per eseguire su macOS e Windows
+    runs-on: ubuntu-latest  # Run on Linux, but add macOS and Windows too
 
     strategy:
       matrix:
@@ -41,26 +40,26 @@ jobs:
       run: |
         # Crea il file eseguibile per ciascun sistema operativo
         if [ "$RUNNER_OS" == "Linux" ]; then
-          pyinstaller --onefile --distpath=./dist/linux main.py
+          pyinstaller --onefile --distpath=./dist/linux --name=main-linux main.py
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          pyinstaller --onefile --distpath=./dist/mac main.py
+          pyinstaller --onefile --distpath=./dist/mac --name=main-macos main.py
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          pyinstaller --onefile --distpath=./dist/windows main.py
+          pyinstaller --onefile --distpath=./dist/windows --name=main-windows main.py
         fi
 
     - name: Check if build exists before uploading
       run: |
-        if [ -f ./dist/linux/main ]; then
+        if [ -f ./dist/linux/main-linux ]; then
           echo "Linux build exists"
         else
           echo "Linux build not found"
         fi
-        if [ -f ./dist/mac/main ]; then
+        if [ -f ./dist/mac/main-macos ]; then
           echo "macOS build exists"
         else
           echo "macOS build not found"
         fi
-        if [ -f ./dist/windows/main.exe ]; then
+        if [ -f ./dist/windows/main-windows.exe ]; then
           echo "Windows build exists"
         else
           echo "Windows build not found"
