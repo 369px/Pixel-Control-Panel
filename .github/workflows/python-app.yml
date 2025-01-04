@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest  # Imposta per eseguire su Linux. Aggiungerò anche il matrix per eseguire su macOS e Windows
 
     strategy:
@@ -37,9 +36,13 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
+    - name: Debug: List files in the directory
+      run: |
+        ls -R
+    
     - name: Test with pytest
       run: |
-        pytest
+        pytest -v  # Verifica i test in modo verboso
     
     - name: Build Executable using PyInstaller
       run: |
@@ -57,4 +60,3 @@ jobs:
       with:
         name: app-build
         path: ./dist
-
