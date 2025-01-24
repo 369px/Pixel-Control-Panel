@@ -1,6 +1,8 @@
 import os
 import platform
 import subprocess
+import ctypes
+from ctypes import windll
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import lib.gui.style as ui
@@ -10,10 +12,14 @@ def detect_sd_card():
     """Detect connected SD Cards."""
     devices = []
     if platform.system() == "Windows":
-        drives = [f"{chr(letter)}:\\" for letter in range(65, 91) if os.path.exists(f"{chr(letter)}:\\")]
-        for drive in drives:
-            if "Removable" in os.popen(f"vol {drive}").read():
-                devices.append(drive)
+        bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+        for letter in range(26):  # Controlla dalla lettera A alla Z
+            if bitmask & (1 << letter):
+                drive_letter = f"{chr(65 + letter)}:\\"
+                drive_type = windll.kernel32.GetDriveTypeW(drive_letter)
+                # DRIVE_REMOVABLE == 2
+                if drive_type == 2:  
+                    devices.append(drive_letter)
     elif platform.system() == "Darwin":
         volumes = [os.path.join("/Volumes", d) for d in os.listdir("/Volumes") if os.path.ismount(os.path.join("/Volumes", d))]
         devices.extend(volumes)
