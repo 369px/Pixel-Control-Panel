@@ -1,8 +1,6 @@
 import os
 import platform
 import subprocess
-import ctypes
-from ctypes import windll
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import lib.gui.style as ui
@@ -12,18 +10,20 @@ def detect_sd_card():
     """Detect connected SD Cards."""
     devices = []
     if platform.system() == "Windows":
+        # Windows specific logic
         bitmask = ctypes.windll.kernel32.GetLogicalDrives()
-        for letter in range(26):  # Controlla dalla lettera A alla Z
+        for letter in range(26):  # Check from A to Z
             if bitmask & (1 << letter):
                 drive_letter = f"{chr(65 + letter)}:\\"
-                drive_type = windll.kernel32.GetDriveTypeW(drive_letter)
-                # DRIVE_REMOVABLE == 2
-                if drive_type == 2:  
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(drive_letter)
+                if drive_type == 2:  # DRIVE_REMOVABLE == 2
                     devices.append(drive_letter)
-    elif platform.system() == "Darwin":
+    elif platform.system() == "Darwin":  # macOS
+        # macOS specific logic
         volumes = [os.path.join("/Volumes", d) for d in os.listdir("/Volumes") if os.path.ismount(os.path.join("/Volumes", d))]
         devices.extend(volumes)
     elif platform.system() == "Linux":
+        # Linux specific logic
         user = os.getenv("USER", "default_user")
         media_path = f"/media/{user}"
         if os.path.exists(media_path):
@@ -31,25 +31,21 @@ def detect_sd_card():
     return devices
 
 def get_disk_identifier(volume_path):
-    """Returns disk identifier for given volume path."""
-    result = subprocess.run(['diskutil', 'info', volume_path], capture_output=True, text=True)
-
-    # Search for line containing device identifier
-    for line in result.stdout.splitlines():
-        if "Device Identifier" in line:
-            return line.split(":")[1].strip()
-
+    """Returns disk identifier for given volume path on macOS."""
+    if platform.system() == "Darwin":
+        result = subprocess.run(['diskutil', 'info', volume_path], capture_output=True, text=True)
+        # Search for line containing device identifier
+        for line in result.stdout.splitlines():
+            if "Device Identifier" in line:
+                return line.split(":")[1].strip()
     return None
 
 def refresh_sd_devices(sd_select, sd_dropdown):
     sd_devices = detect_sd_card() or ["Plug in and select"]
-
     menu = sd_dropdown['menu']
     menu.delete(0, 'end')
-
     for device in sd_devices:
         menu.add_command(label=device, command=tk._setit(sd_select, device))
-
     sd_select.set(sd_devices[0])
 
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
