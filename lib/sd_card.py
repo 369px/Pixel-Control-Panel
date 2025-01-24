@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import tkinter as tk
+import ctypes
 from tkinter import simpledialog, messagebox
 import lib.gui.style as ui
 import re
