@@ -188,7 +188,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
 
     sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
 
-    return sd_select
+    return sd_select, sd_dropdown
 
 #
 #       ui.window(width,height)
