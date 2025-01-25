@@ -26,20 +26,26 @@ file_name = "spi_burn_20240402.img"
 # Function to flash the unbricker image
 def flash_unbricker(sd_selector, display):
     # Start download on a different thread
+    print("download..")
     download_thread = threading.Thread(target=_download_and_flash, args=(sd_selector, display))
     download_thread.start()
 
 # Function to download and flash the unbricker image
 def _download_and_flash(sd_selector, display):
     # Step 1: Check if the file is already downloaded
+    print("real download..")
     user_folder = Path.home() / ".spruce_updates"
     user_folder.mkdir(parents=True, exist_ok=True)
+
+    print("continuo download..")
 
     cached_file_path = user_folder / file_name
     if cached_file_path.exists():
         display.message("Unbricker image already downloaded.")
+        print("Unbricker image already downloaded.")
     else:
         display.message("Downloading unbricker image file...")
+        print("Downloading unbricker image file...")
         try:
             with requests.get(unbricker_download_link, stream=True) as response:
                 response.raise_for_status()
@@ -60,17 +66,20 @@ def _download_and_flash(sd_selector, display):
                                 last_update = downloaded_size
 
             display.message("Download completed!")
+            print("Downloading completed...")
         except requests.exceptions.RequestException as e:
             display.message(f"Error during download: {e}")
             return  # Stop the process if download fails
 
     # Step 2: Get the selected SD card path
+    print("select sd...")
     sd_card_path = sd_selector.get()
 
     if not sd_card_path or sd_card_path == "Plug in and select":
         display.message("Please select a valid SD card.")
         return  # Stop the process if no SD card is selected
 
+    print("flash_unbricker_for_real...")
     def flash_unbricker_for_real():
         # Step 4: Flash the unbricker image onto the SD card
         try:
@@ -100,22 +109,35 @@ def _download_and_flash(sd_selector, display):
 # Function to flash the image to the SD card
 def flash_image_to_sd(sd_card_path, image_path):
     system_os = platform.system()
+    print(f"Flashing image on {system_os}")
+    print(f"SD card path: {sd_card_path}")
+    print(f"Image path: {image_path}")
+
+    image_path = Path(image_path).resolve()  # Risolve i percorsi relativi
+    image_path_wsl = "/mnt/" + str(image_path).drive.lower() + str(image_path).as_posix().replace(image_path.drive, "")  # Traduci in formato WSL
 
     try:
-        if system_os == "Windows":
-            # Using diskpart for Windows to write the image
-            # Assuming flash_image_script.txt contains necessary diskpart commands
-            flash_script = """
-            select disk X
-            clean
-            create partition primary
-            format fs=fat32 quick
-            assign letter=X
-            exit
-            """
-            with open("flash_image_script.txt", "w") as f:
-                f.write(flash_script.replace("X", sd_card_path))
-            subprocess.run(f"diskpart /s flash_image_script.txt", check=True, shell=True)
+        if system_os == "Windows":            
+            try:
+                flash_script = f"""select volume {sd_card_path[0]}
+clean
+create partition primary
+format fs=fat32 quick
+assign
+exit"""
+                
+                # Run the diskpart script
+                with open("flash_image_script.txt", "w") as f:
+                    f.write(flash_script)
+                
+                subprocess.run("diskpart /s flash_image_script.txt", check=True, shell=True)
+
+                # Scrivere l'immagine usando PowerShell
+                wsl_command = f"wsl sudo dd if={image_path_wsl} of=/dev/sd1 bs=4M status=progress"
+                subprocess.run(wsl_command, shell=True, check=True)
+                
+            except Exception as e:
+                print(f"Error flashing image: {e}")
 
         elif system_os == "Darwin" or system_os == "Linux":
             # macOS/Linux: Use dd command
@@ -126,7 +148,7 @@ def flash_image_to_sd(sd_card_path, image_path):
             raise OSError(f"Unsupported OS: {system_os}")
 
         # Sync the file system to ensure it's written to disk
-        subprocess.run(f"sync", shell=True, check=True)
+        # subprocess.run(f"sync", shell=True, check=True)
 
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to flash image to {sd_card_path}: {str(e)}")  # Raise error if dd fails

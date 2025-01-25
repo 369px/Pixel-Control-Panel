@@ -1,8 +1,6 @@
-
-            select disk D:\
-            clean
-            create partition primary
-            format fs=fat32 quick
-            assign letter=D:\
-            exit
-            
+select volume D
+clean
+create partition primary
+format fs=fat32 quick
+assign
+exit

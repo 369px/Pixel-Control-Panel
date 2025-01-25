@@ -32,13 +32,27 @@ def detect_sd_card():
     return devices
 
 def get_disk_identifier(volume_path):
-    """Returns disk identifier for given volume path on macOS."""
-    if platform.system() == "Darwin":
+    """Returns disk identifier for given volume path."""
+    system = platform.system()
+    
+    if system == "Darwin":
         result = subprocess.run(['diskutil', 'info', volume_path], capture_output=True, text=True)
-        # Search for line containing device identifier
         for line in result.stdout.splitlines():
             if "Device Identifier" in line:
                 return line.split(":")[1].strip()
+    elif system == "Windows":
+        # Windows: usa diskpart per ottenere il numero del disco
+        try:
+            # Get disk number using diskpart
+            result = subprocess.run(['diskpart', '/s', 'get_disk_number.txt'], capture_output=True, text=True)
+            for line in result.stdout.splitlines():
+                if volume_path in line:
+                    # Extract disk number from the line
+                    disk_num = line.split()[0]
+                    return disk_num
+        except Exception as e:
+            print(f"Error getting disk number: {e}")
+            return None
     return None
 
 def refresh_sd_devices(sd_select, sd_dropdown):

@@ -1,0 +1,5 @@
+
+                select volume E
+                format fs=fat32 quick label=AAAAAAAAA
+                exit
+                
