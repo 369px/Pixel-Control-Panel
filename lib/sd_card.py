@@ -101,7 +101,7 @@ def format_sd_card(sd_path, display, callback):
                     subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
                     os.remove("format_script.txt")
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
-                    callback()  
+                    callback()
                     return True
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
@@ -140,7 +140,7 @@ def format_sd_card(sd_path, display, callback):
                     # Chiediamo all'utente il nome del volume
                     display.user_input("Enter the name for your new volume:", on_volume_name_enter)
 
-                display.user_input("Enter password to give\nControl Panel permission to\nformat your SD card:", on_password_enter)
+                display.user_input("Enter password to give\nControl Panel permission to\nformat your SD card:", on_password_enter, "password")
 
             else:
                 messagebox.showerror("Error", "Unable to find the disk identifier.")

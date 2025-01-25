@@ -109,7 +109,7 @@ class TerminalCanvas(tk.Canvas):
         print("Action confirmed")  # Log or perform any action upon confirmation.
         event()
 
-    def user_input(self, message: str, callback, x=1, y=1):
+    def user_input(self, message: str, callback, type="text", x=1, y=1):
         """
         Displays a message and an input container (Entry) to the user,
         Returns input only when user clicks "Enter".
@@ -134,7 +134,11 @@ class TerminalCanvas(tk.Canvas):
 
         # Create input field for password (showing "*" characters for security)
         self.input_var = tk.StringVar()
-        self.input_entry = tk.Entry(self, textvariable=self.input_var, font=("Arial", font_size), bd=1, highlightthickness=1, show='*')  # Hide text with '*'
+        if type == "text":
+            self.input_entry = tk.Entry(self, textvariable=self.input_var, font=("Arial", font_size), bd=1, highlightthickness=1)
+        else:
+            self.input_entry = tk.Entry(self, textvariable=self.input_var, font=("Arial", font_size), bd=1, highlightthickness=1, show='*')  # Hide text with '*'
+
         self.input_entry.place(x=width // 2, y=y + 125, anchor="center")
 
         # callback function that runs when user clicks "Enter"
