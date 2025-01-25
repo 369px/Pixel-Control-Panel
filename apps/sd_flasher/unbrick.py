@@ -16,6 +16,8 @@ import requests
 import os, platform
 import subprocess
 
+from lib.usb_flasher import USBFlasher
+
 # Global to store update file path
 cached_file_path = None
 
@@ -114,28 +116,28 @@ def flash_image_to_sd(sd_card_path, image_path):
     print(f"Image path: {image_path}")
 
     image_path = Path(image_path).resolve()  # Risolve i percorsi relativi
-    image_path_wsl = "/mnt/" + str(image_path).drive.lower() + str(image_path).as_posix().replace(image_path.drive, "")  # Traduci in formato WSL
 
     try:
         if system_os == "Windows":            
             try:
-                flash_script = f"""select volume {sd_card_path[0]}
-clean
-create partition primary
-format fs=fat32 quick
-assign
-exit"""
-                
-                # Run the diskpart script
-                with open("flash_image_script.txt", "w") as f:
-                    f.write(flash_script)
-                
-                subprocess.run("diskpart /s flash_image_script.txt", check=True, shell=True)
+                # Extract drive letter from sd_card_path
+                if isinstance(sd_card_path, str):
+                    drive_letter = sd_card_path[0] if sd_card_path else None
+                else:
+                    drive_letter = str(sd_card_path)[0] if str(sd_card_path) else None
 
-                # Scrivere l'immagine usando PowerShell
-                wsl_command = f"wsl sudo dd if={image_path_wsl} of=/dev/sd1 bs=4M status=progress"
-                subprocess.run(wsl_command, shell=True, check=True)
-                
+                if not drive_letter:
+                    raise ValueError("Invalid SD card path: unable to determine drive letter")
+
+                # Initialize and use the flasher
+                flasher = USBFlasher()
+                success = flasher.flash(str(image_path), drive_letter)
+
+                if not success:
+                    raise RuntimeError("Flash operation failed")
+
+                print("Flash completed successfully")
+                return True
             except Exception as e:
                 print(f"Error flashing image: {e}")
 
@@ -143,7 +145,6 @@ exit"""
             # macOS/Linux: Use dd command
             device_path = sd_card.get_disk_identifier(sd_card_path)  # Adjust if necessary
             subprocess.run(f"sudo dd if={image_path} of={device_path} bs=4M status=progress", shell=True, check=True)
-
         else:
             raise OSError(f"Unsupported OS: {system_os}")
 
