@@ -43,11 +43,12 @@ def get_disk_identifier(volume_path):
 
 def refresh_sd_devices(sd_select, sd_dropdown):
     sd_devices = detect_sd_card() or ["Plug in and select"]
+    selected_sd = sd_select.get()
     menu = sd_dropdown['menu']
     menu.delete(0, 'end')
     for device in sd_devices:
         menu.add_command(label=device, command=tk._setit(sd_select, device))
-    sd_select.set(sd_devices[0])
+    sd_select.set(selected_sd)
 
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()
