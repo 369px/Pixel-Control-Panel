@@ -8,7 +8,7 @@ import textwrap
 class TerminalCanvas(tk.Canvas):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.config(bd=0, highlightthickness=0)  # Rimuovi i bordi
+        self.config(bd=0, highlightthickness=0)  # Remove borders
         # Initialize 'text_items' as an empty list
         self.text_items = []
         self.cancelled = False  # Flag to cancel the action
@@ -233,7 +233,7 @@ def create(container_side="top"):
     root = context.get_root()
 
     # Custom canvas creation (using TerminalCanvas subclass)
-    terminal_canvas = TerminalCanvas(root, height=155)
+    terminal_canvas = TerminalCanvas(root, height=155, bg="#323232")
 
     if container_side == "bottom":
         terminal_canvas.pack(fill="both", expand=True, side=container_side, pady=2)

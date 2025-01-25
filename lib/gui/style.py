@@ -139,7 +139,7 @@ def background(color="#282828"):
             ui.create_sd_selector("bottom")
 
 '''
-def create_sd_selector(terminal,container_side="top"):
+def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     '''
     Creates an dropdown element showing all connected external devices
 
@@ -149,7 +149,7 @@ def create_sd_selector(terminal,container_side="top"):
     root = context.get_root()
 
     # SD selection container
-    container_sd = tk.Frame(root, height=50)
+    container_sd = tk.Frame(root, height=50, bg=container_bg)
 
     if container_side == "bottom":
         container_sd.pack(fill="both", expand=True, side="bottom")
