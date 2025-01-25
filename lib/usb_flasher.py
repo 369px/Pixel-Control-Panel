@@ -1,6 +1,7 @@
 import subprocess
 import os
 import time
+import psutil
 
 class USBFlasher:
     def __init__(self, exe_path="lib/flashlib.exe"):
@@ -29,11 +30,22 @@ class USBFlasher:
             
         drive_letter = drive_letter.strip().rstrip(':')
         
-        # Prima smonta il volume
-        print(f"Smontaggio del volume {drive_letter}...")
-        if not self.dismount_volume(drive_letter):
-            print("Attenzione: Impossibile smontare il volume. Provo comunque a procedere...")
-        
+        # chiudi processi # 
+        for proc in psutil.process_iter(['pid', 'name', 'open_files']):
+            try:
+                # Controlla i file aperti dal processo
+                open_files = proc.info.get('open_files')
+                if open_files:
+                    for file in open_files:
+                        if file.path.startswith(drive_letter):
+                            print(f"Processo trovato: {proc.info['name']} (PID: {proc.info['pid']}) sta utilizzando {file.path}")
+                            
+                            # Termina il processo
+                            os.kill(proc.info['pid'], 9)
+                            print(f"Processo {proc.info['name']} terminato.")
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                pass
+
         try:
             start_time = time.time()
             

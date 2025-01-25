@@ -12,6 +12,7 @@ def _main(root):
     display = terminal.create("bottom")
 
     sd_selector = ui.create_sd_selector(display,"top")
+
     '''
     update_btn = ui.Button(
         parent=menu_container,

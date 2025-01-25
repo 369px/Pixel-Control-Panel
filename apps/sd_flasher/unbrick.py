@@ -75,7 +75,7 @@ def _download_and_flash(sd_selector, display):
 
     # Step 2: Get the selected SD card path
     print("select sd...")
-    sd_card_path = sd_selector.get()
+    sd_card_path = sd_selector[0].get()
 
     if not sd_card_path or sd_card_path == "Plug in and select":
         display.message("Please select a valid SD card.")
