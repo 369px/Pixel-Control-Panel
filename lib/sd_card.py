@@ -81,17 +81,35 @@ def format_sd_card(sd_path, display, callback):
 
     try:
         if os_type == "Windows":
-            script = f"""
-            select volume {sd_path[0]}
-            format fs=fat32 quick
-            exit
-            """
-            with open("format_script.txt", "w") as script_file:
-                script_file.write(script)
-            subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
-            os.remove("format_script.txt")
-            callback()  # Call the callback after successful formatting
-            return True
+            # Chiedi all'utente il nome del volume
+            def on_volume_name_enter(volume_name):
+                if not volume_name or len(volume_name.strip()) == 0:
+                    messagebox.showerror("Error", "Volume name cannot be empty!")
+                    return
+                volume_name = volume_name.upper()  # Converti in maiuscolo per evitare errori
+
+                # Crea lo script di formattazione
+                script = f"""
+                select volume {sd_path[0]}
+                format fs=fat32 quick label={volume_name}
+                exit
+                """
+                try:
+                    # Scrivi e esegui il comando DiskPart
+                    with open("format_script.txt", "w") as script_file:
+                        script_file.write(script)
+                    subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
+                    os.remove("format_script.txt")
+                    display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
+                    callback()  
+                    return True
+                except subprocess.CalledProcessError as e:
+                    messagebox.showerror("Error", f"Error while formatting: {e}")
+                    print(e.stderr)
+                    return False
+
+            # Chiedi il nome del volume
+            display.user_input("Enter the name for your new volume:", on_volume_name_enter)
 
         if os_type == "Darwin":
             # Get disk identifier for macOS
