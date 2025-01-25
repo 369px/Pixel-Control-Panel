@@ -25,6 +25,7 @@
 # At least ones you'll need.
 
 import tkinter as tk
+#from tkinter import ttk
 from PIL import Image, ImageTk
 import tkinter.font as tkfont
 import textwrap, os, platform
@@ -156,7 +157,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     else:
         container_sd.pack(fill="both", expand=True, side="top")
 
-    tk.Label(container_sd, text="TF / SD Card", fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
+    tk.Label(container_sd, text="TF / SD Card", bg=container_bg, fg="#7c6f64", font=("Arial", 12)).pack(side="left", padx=(12, 5))
 
     # Icon reference
     root.eject_icon = Image.open("res/gui/eject.png")
@@ -168,7 +169,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     root.eject_icon_tk = ImageTk.PhotoImage(eject_icon_resized)
 
     # Create labels for icons with resized images
-    eject_icon = tk.Label(container_sd, bg="#323232", image=root.eject_icon_tk)
+    eject_icon = tk.Label(container_sd, bg=container_bg, image=root.eject_icon_tk)
 
     # Bind the "eject" icon click event to unmount the SD card
     eject_icon.bind("<Button-1>", lambda e: sd.eject_sd(sd_select.get(), sd_select, sd_dropdown, terminal))  # Pass the selected SD device
@@ -180,6 +181,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     sd_select = tk.StringVar()
     sd_devices = sd.detect_sd_card() or ["Plug in and select"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
+    sd_dropdown.config(bg=container_bg,fg="#282828")
     sd_dropdown.pack(side="right", pady=5, padx=(15,0))
     sd_select.set(sd_devices[0])
 
