@@ -181,7 +181,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     sd_select = tk.StringVar()
     sd_devices = sd.detect_sd_card() or ["Plug in and select"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
-    sd_dropdown.config(bg=container_bg, width=20)
+    sd_dropdown.config(bg=container_bg, width=20, highlightthickness=0, bd=0)
     sd_dropdown.pack(side="right", pady=5, padx=(15,0))
     sd_select.set(sd_devices[0])
 
