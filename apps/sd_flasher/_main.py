@@ -4,6 +4,7 @@ from apps.sd_flasher.update import start_update
 from apps.sd_flasher.unbrick import flash_unbricker
 import apps.sd_flasher.events as events
 import tkinter as tk
+import lib.sd_card as sd
 
 def _main(root):
     menu_container = tk.Frame(root)
@@ -14,6 +15,9 @@ def _main(root):
     sd_selector = ui.create_sd_selector(display,"top")
 
     '''
+
+    /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+
     update_btn = ui.Button(
         parent=menu_container,
         text="Update spruce",
@@ -41,6 +45,6 @@ def _main(root):
         text="Unbrick",
         command=lambda: display.confirmation(
             "Drop an unbricker image or\npress 'A' to download / install it",
-            lambda: flash_unbricker(sd_selector, display)
+            lambda: flash_unbricker(sd_selector, display, sd.get_disk_identifier(sd_selector[0].get()))
         )
     ).create()

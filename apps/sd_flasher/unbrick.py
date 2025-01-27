@@ -26,14 +26,14 @@ unbricker_download_link = "https://github.com/spruceUI/spruceOS/releases/downloa
 file_name = "spi_burn_20240402.img"
 
 # Function to flash the unbricker image
-def flash_unbricker(sd_selector, display):
+def flash_unbricker(sd_selector, display, identifier):
     # Start download on a different thread
     print("download..")
-    download_thread = threading.Thread(target=_download_and_flash, args=(sd_selector, display))
+    download_thread = threading.Thread(target=_download_and_flash, args=(sd_selector, display, identifier))
     download_thread.start()
 
 # Function to download and flash the unbricker image
-def _download_and_flash(sd_selector, display):
+def _download_and_flash(sd_selector, display, identifier):
     # Step 1: Check if the file is already downloaded
     print("real download..")
     user_folder = Path.home() / ".spruce_updates"
@@ -86,7 +86,7 @@ def _download_and_flash(sd_selector, display):
         # Step 4: Flash the unbricker image onto the SD card
         try:
             display.message("Flashing unbricker image onto SD card...")
-            flash_image_to_sd(sd_card_path, cached_file_path)
+            flash_image_to_sd(sd_card_path, cached_file_path, identifier)
             display.message(f"Unbricker image successfully flashed to {sd_card_path}!")
         except Exception as e:
             display.message(f"Error flashing the unbricker image: {e}")
@@ -109,7 +109,7 @@ def _download_and_flash(sd_selector, display):
         return  # Stop the process if formatting fails
 
 # Function to flash the image to the SD card
-def flash_image_to_sd(sd_card_path, image_path):
+def flash_image_to_sd(sd_card_path, image_path, identifier):
     system_os = platform.system()
     print(f"Flashing image on {system_os}")
     print(f"SD card path: {sd_card_path}")
@@ -144,11 +144,10 @@ def flash_image_to_sd(sd_card_path, image_path):
         elif system_os == "Darwin" or system_os == "Linux":
             # macOS/Linux: Use dd command
             try:
-                device_path = sd_card.get_disk_identifier(sd_card_path)
-                if not device_path:
+                if not identifier:
                     raise ValueError("Invalid SD card path: unable to determine drive letter")
                 flasher = USBFlasher_macos()
-                success = flasher.flash(str(image_path), f"/dev/{device_path}")
+                success = flasher.flash(str(image_path), f"/dev/{identifier}")
                 if not success:
                     raise RuntimeError("Flash operation failed")
 
