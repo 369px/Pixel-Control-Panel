@@ -1,11 +1,52 @@
-''' from wiki:
+import threading
+from pathlib import Path
+from lib import sd_card
+import lib.gui.style as ui
+from tkinter import filedialog
+import os, platform
+import subprocess
+
+# Global to store update file path
+cached_file_path = None
+
+# Function to start the formatting process (stop after formatting to FAT32)
+def start_formatting(sd_selector, display, identifier):
+    # Step 1: Get the selected SD card path
+    print("select sd...")
+    sd_card_path = sd_selector[0].get()
+
+    if not sd_card_path or sd_card_path == "Plug in and select":
+        display.message("Please select a valid SD card.")
+        return  # Stop the process if no SD card is selected
+
+    # Step 2: Format the SD card to FAT32
+    try:
+        display.message(f"Formatting {sd_card_path} to FAT32...")
+
+        # Call format_sd_card and pass None as callback, because we don't need to flash anything
+        if not sd_card.format_sd_card(sd_card_path, display, None):
+            print(f"Error formatting SD card: {sd_card_path}")
+            return  # Stop the process if formatting fails
+
+        display.message(f"SD card {sd_card_path} formatted successfully!")
+
+    except Exception as e:
+        display.message(f"Error formatting SD card: {e}")
+        print(f"Error formatting SD card: {e}")
+        return  # Stop the process if formatting fails
+
+'''
+OLD  PROCESS THAT DOWNLOADS UNBRICKER IMAGE AND FLASHES IT INTO THE SD CARD
+
+
+ from wiki:
 Unbricking an A30
 
     Download and Extract the Unbricker Image.
 
     Using Rufus, flash the Unbricker as a bootable image onto a fresh microSD card formatting it to FAT32.
 
-'''
+
 
 import py7zr, threading
 from pathlib import Path
@@ -163,3 +204,5 @@ def flash_image_to_sd(sd_card_path, image_path, identifier):
 
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to flash image to {sd_card_path}: {str(e)}")  # Raise error if dd fails
+
+'''
