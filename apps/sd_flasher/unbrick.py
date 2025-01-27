@@ -16,7 +16,7 @@ import requests
 import os, platform
 import subprocess
 
-from lib.usb_flasher import USBFlasher
+from lib.usb_flasher import USBFlasher, USBFlasher_macos
 
 # Global to store update file path
 cached_file_path = None
@@ -118,7 +118,7 @@ def flash_image_to_sd(sd_card_path, image_path):
     image_path = Path(image_path).resolve()  # Risolve i percorsi relativi
 
     try:
-        if system_os == "Windows":            
+        if system_os == "Windows":
             try:
                 # Extract drive letter from sd_card_path
                 if isinstance(sd_card_path, str):
@@ -143,8 +143,17 @@ def flash_image_to_sd(sd_card_path, image_path):
 
         elif system_os == "Darwin" or system_os == "Linux":
             # macOS/Linux: Use dd command
-            device_path = sd_card.get_disk_identifier(sd_card_path)  # Adjust if necessary
-            subprocess.run(f"sudo dd if={image_path} of={device_path} bs=4M status=progress", shell=True, check=True)
+            device_path = sd_card.get_disk_identifier(sd_card_path)
+            print(device_path)
+            if not device_path:
+                raise ValueError("Invalid SD card path: unable to determine drive letter")
+            flasher = USBFlasher_macos()
+            success = flasher.flash(str(image_path), f"/dev/disk{device_path}")
+            if not success:
+                raise RuntimeError("Flash operation failed")
+
+            print("Flash completed successfully")
+            return True
         else:
             raise OSError(f"Unsupported OS: {system_os}")
 
