@@ -143,17 +143,19 @@ def flash_image_to_sd(sd_card_path, image_path):
 
         elif system_os == "Darwin" or system_os == "Linux":
             # macOS/Linux: Use dd command
-            device_path = sd_card.get_disk_identifier(sd_card_path)
-            print(device_path)
-            if not device_path:
-                raise ValueError("Invalid SD card path: unable to determine drive letter")
-            flasher = USBFlasher_macos()
-            success = flasher.flash(str(image_path), f"/dev/disk{device_path}")
-            if not success:
-                raise RuntimeError("Flash operation failed")
+            try:
+                device_path = sd_card.get_disk_identifier(sd_card_path)
+                if not device_path:
+                    raise ValueError("Invalid SD card path: unable to determine drive letter")
+                flasher = USBFlasher_macos()
+                success = flasher.flash(str(image_path), f"/dev/{device_path}")
+                if not success:
+                    raise RuntimeError("Flash operation failed")
 
-            print("Flash completed successfully")
-            return True
+                print("Flash completed successfully")
+                return True
+            except Exception as e:
+                print(f"Error flashing image: {e}")
         else:
             raise OSError(f"Unsupported OS: {system_os}")
 
