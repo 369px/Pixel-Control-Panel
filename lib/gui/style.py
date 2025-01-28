@@ -273,19 +273,19 @@ def create_gui(root, app, set_app):
         window_bar = tk.Frame(root, bg="#323232", height=40, relief="flat", bd=0)
         window_bar.pack(side="top", fill="x", padx=0, pady=0)
 
-        # Variables for tracking the position (make sure to use nonlocal here)
+        # Variables for tracking the position
         drag_start_x = 0
         drag_start_y = 0
 
         # Function to start dragging (called when mouse is pressed)
         def on_drag_start(event):
-            nonlocal drag_start_x, drag_start_y  # Declare nonlocal to modify the outer variables
+            nonlocal drag_start_x, drag_start_y
             drag_start_x = event.x_root
             drag_start_y = event.y_root
 
         # Function to perform the dragging (called when mouse is moved)
         def on_drag_motion(event):
-            nonlocal drag_start_x, drag_start_y  # Ensure these are nonlocal
+            nonlocal drag_start_x, drag_start_y
             delta_x = event.x_root - drag_start_x
             delta_y = event.y_root - drag_start_y
             # Move the window by the delta in the x and y directions
@@ -297,9 +297,27 @@ def create_gui(root, app, set_app):
         window_bar.bind("<ButtonPress-1>", on_drag_start)
         window_bar.bind("<B1-Motion>", on_drag_motion)
 
-        # Close button (X)
-        close_button = tk.Button(window_bar, text="X", command=root.quit, bg="#242424", fg="#ff0000", relief="flat", font=("Arial", 12, "bold"))
-        close_button.pack(side="left", padx=10)
+        # Create a Canvas to draw the round X button
+        close_button_canvas = tk.Canvas(window_bar, width=30, height=30, bg="#323232", bd=0, highlightthickness=0)
+        close_button_canvas.pack(side="left", padx=0)
+
+        # Draw the circular "X" button (initial gray color)
+        circle_id = close_button_canvas.create_oval(5, 5, 25, 25, fill="#6b6b6b", outline="")  # Gray circle
+
+        # Bind the click event to close the application
+        close_button_canvas.bind("<Button-1>", lambda e: root.quit())
+
+        # Hover effect: change color to red when mouse enters
+        def on_enter_hover(e):
+            close_button_canvas.itemconfig(circle_id, fill="#ff0000")  # Change circle color to red
+
+        # Hover effect: change color back to gray when mouse leaves
+        def on_leave_hover(e):
+            close_button_canvas.itemconfig(circle_id, fill="#6b6b6b")  # Change circle color back to gray
+
+        # Add the hover bindings for the canvas
+        close_button_canvas.bind("<Enter>", on_enter_hover)  # Change to red on hover
+        close_button_canvas.bind("<Leave>", on_leave_hover)  # Change back to gray when leaving hover
 
         # Window title (Control Panel)
         title_label = tk.Label(window_bar, text="Control Panel", fg="white", bg="#323232", font=("Arial", 12, "bold"))
@@ -308,12 +326,12 @@ def create_gui(root, app, set_app):
         # Optional: Set Windows to support transparency and rounded corners via ctypes (works on Windows)
         if platform.system() == "Windows":
             if ctypes.windll.shell32.IsUserAnAdmin():
-                # This will work only on Windows
                 root.attributes("-transparentcolor", "#282828")
                 # root.overrideredirect(True)
 
     # Call the function to create the window bar
     generate_window_bar()
+
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#242424", height=25, pady=0)
