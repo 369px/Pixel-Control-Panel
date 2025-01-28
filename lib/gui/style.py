@@ -302,7 +302,7 @@ def create_gui(root, app, set_app):
         close_button_canvas.pack(side="left", padx=0)
 
         # Draw the circular "X" button (initial gray color)
-        circle_id = close_button_canvas.create_oval(5, 5, 25, 25, fill="#6b6b6b", outline="")  # Gray circle
+        circle_id = close_button_canvas.create_oval(9, 9, 21, 21, fill="#6b6b6b", outline="")  # Gray circle
 
         # Bind the click event to close the application
         close_button_canvas.bind("<Button-1>", lambda e: root.quit())
