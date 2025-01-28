@@ -7,6 +7,7 @@ from tkinter import simpledialog, messagebox
 import lib.gui.style as ui
 import re
 
+
 def detect_sd_card():
     """Detect connected SD Cards."""
     devices = []
@@ -34,7 +35,7 @@ def detect_sd_card():
 def get_disk_identifier(volume_path):
     """Returns disk identifier for given volume path."""
     system = platform.system()
-    
+
     if system == "Darwin":
         result = subprocess.run(['diskutil', 'info', volume_path], capture_output=True, text=True)
         for line in result.stdout.splitlines():
@@ -55,9 +56,12 @@ def get_disk_identifier(volume_path):
             return None
     return None
 
-def refresh_sd_devices(sd_select, sd_dropdown):
+def refresh_sd_devices(sd_select, sd_dropdown, identifier):
     sd_devices = detect_sd_card() or ["Plug in and select"]
-    selected_sd = sd_select.get()
+    if sd_devices[0] == "Plug in and select":
+        selected_sd = "Plug in and select"
+    else:
+        selected_sd = get_volume_name(identifier)
     menu = sd_dropdown['menu']
     menu.delete(0, 'end')
     for device in sd_devices:
@@ -66,6 +70,7 @@ def refresh_sd_devices(sd_select, sd_dropdown):
 
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()
+    identifier = get_disk_identifier(sd_device)
     if sd_device != "Plug in and select":
         try:
             if system_os == "Linux":
@@ -88,9 +93,68 @@ def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
         print("No SD found to unmount.")
         terminal.message("No SD found to unmount.")
 
-    refresh_sd_devices(sd_select, sd_dropdown)
+    refresh_sd_devices(sd_select, sd_dropdown, identifier)
 
-def format_sd_card(sd_path, display, callback):
+def get_volume_name(disk_identifier):
+    """
+    RETURN NAME OF VOLUME ASSOCIED WITH DISK.
+
+    Args:
+        disk_identifier (str): identifier disk (es. '/dev/disk4', '/dev/sdb', 'D:')
+
+    Returns:
+        str: name of volume, or None is not found.
+    """
+    system = platform.system()
+
+    try:
+        if system == "Darwin":  # macOS
+            # Usa diskutil per ottenere informazioni sul disco
+            result = subprocess.run(
+                ["diskutil", "info", disk_identifier],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            for line in result.stdout.splitlines():
+                if "Volume Name" in line:
+                    return "/Volumes/" + line.split(":")[1].strip()
+
+        elif system == "Linux":
+            # Usa lsblk per ottenere informazioni sul disco
+            result = subprocess.run(
+                ["lsblk", "-o", "NAME,LABEL", "-n", "-l", disk_identifier],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            for line in result.stdout.splitlines():
+                parts = line.split()
+                if len(parts) == 2:  # Controlla che ci sia un'etichetta
+                    return parts[1]
+
+        elif system == "Windows":
+            # Usa PowerShell per ottenere informazioni sul disco
+            result = subprocess.run(
+                [
+                    "powershell", "-Command",
+                    f"Get-Volume -DriveLetter {disk_identifier[0]} | Select-Object -ExpandProperty FileSystemLabel"
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            return result.stdout.strip()
+
+        else:
+            raise NotImplementedError(f"Piattaforma non supportata: {system}")
+
+    except Exception as e:
+        print(f"Errore nel recupero del nome del volume: {e}")
+
+    return None
+
+def format_sd_card(sd_path, display, callback, sd_selector):
     """Automatically format SD Card."""
     os_type = platform.system()
 
@@ -102,7 +166,7 @@ def format_sd_card(sd_path, display, callback):
                     messagebox.showerror("Error", "Volume name cannot be empty!")
                     return
                 volume_name = volume_name.upper()  # Converti in maiuscolo per evitare errori
-
+                identifier = get_disk_identifier(volume_name)
                 # Crea lo script di formattazione
                 script = f"""
                 select volume {sd_path[0]}
@@ -115,8 +179,12 @@ def format_sd_card(sd_path, display, callback):
                         script_file.write(script)
                     subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
                     os.remove("format_script.txt")
+                    refresh_sd_devices(sd_selector[0], sd_selector[1], identifier)
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
-                    callback()
+                    try:
+                        callback()
+                    except:
+                        pass
                     return True
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
@@ -145,8 +213,12 @@ def format_sd_card(sd_path, display, callback):
                             print(f"Running command: {format_command}")
                             result = subprocess.run(format_command, check=True, shell=True, capture_output=True, text=True)
                             print(result.stdout)  # Debug output
+                            refresh_sd_devices(sd_selector[0], sd_selector[1], disk_identifier)
                             display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{v}'!")
-                            callback()  # Call the callback after successful formatting
+                            try:
+                                callback()  # Call the callback after successful formatting
+                            except:
+                                pass
                             return True
                         else:
                             messagebox.showerror("Error", "Unable to parse disk identifier correctly.")

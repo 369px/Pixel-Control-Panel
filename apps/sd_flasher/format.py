@@ -5,12 +5,12 @@ import lib.gui.style as ui
 from tkinter import filedialog
 import os, platform
 import subprocess
-
+from lib.sd_card import refresh_sd_devices
 # Global to store update file path
 cached_file_path = None
 
 # Function to start the formatting process (stop after formatting to FAT32)
-def start_formatting(sd_selector, display, identifier):
+def start_formatting(sd_selector, display):
     # Step 1: Get the selected SD card path
     print("select sd...")
     sd_card_path = sd_selector[0].get()
@@ -24,7 +24,7 @@ def start_formatting(sd_selector, display, identifier):
         display.message(f"Formatting {sd_card_path} to FAT32...")
 
         # Call format_sd_card and pass None as callback, because we don't need to flash anything
-        if not sd_card.format_sd_card(sd_card_path, display, None):
+        if not sd_card.format_sd_card(sd_card_path, display, None, sd_selector):
             print(f"Error formatting SD card: {sd_card_path}")
             return  # Stop the process if formatting fails
 
