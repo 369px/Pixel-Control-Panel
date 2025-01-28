@@ -33,6 +33,7 @@ from lib.gui.context import context
 #import lib.terminal as terminal_func
 import lib.sd_card as sd
 from typing import Callable, Tuple, Any, Optional
+import ctypes, platform
 
 topbar_container = None
 bottombar_container = None
@@ -249,9 +250,9 @@ def on_enter(e, sel_bg="#ebdbb2"):
 def on_leave(e):
     e.widget.config(bg=e.widget.original_bg)  # Restore original color
 
+
 def create_gui(root, app, set_app):
     root.title("spruceUI Control Panel")
-
     root.resizable(False, False)
 
     # Set app background color
@@ -267,8 +268,52 @@ def create_gui(root, app, set_app):
     root.sd_image = tk.PhotoImage(file="res/apps/sd.png")
     root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
 
-    def on_icon_click(new_app):
-        set_app(new_app)  # Use the set_app function from main.py
+    def generate_window_bar():
+        # Create the window bar container
+        window_bar = tk.Frame(root, bg="#323232", height=40, relief="flat", bd=0)
+        window_bar.pack(side="top", fill="x", padx=0, pady=0)
+
+        # Variables for tracking the position (make sure to use nonlocal here)
+        drag_start_x = 0
+        drag_start_y = 0
+
+        # Function to start dragging (called when mouse is pressed)
+        def on_drag_start(event):
+            nonlocal drag_start_x, drag_start_y  # Declare nonlocal to modify the outer variables
+            drag_start_x = event.x_root
+            drag_start_y = event.y_root
+
+        # Function to perform the dragging (called when mouse is moved)
+        def on_drag_motion(event):
+            nonlocal drag_start_x, drag_start_y  # Ensure these are nonlocal
+            delta_x = event.x_root - drag_start_x
+            delta_y = event.y_root - drag_start_y
+            # Move the window by the delta in the x and y directions
+            root.geometry(f"+{root.winfo_x() + delta_x}+{root.winfo_y() + delta_y}")
+            drag_start_x = event.x_root  # Update the drag start position to continue dragging
+            drag_start_y = event.y_root
+
+        # Bind the drag start and motion to the window bar
+        window_bar.bind("<ButtonPress-1>", on_drag_start)
+        window_bar.bind("<B1-Motion>", on_drag_motion)
+
+        # Close button (X)
+        close_button = tk.Button(window_bar, text="X", command=root.quit, bg="#242424", fg="#ff0000", relief="flat", font=("Arial", 12, "bold"))
+        close_button.pack(side="left", padx=10)
+
+        # Window title (Control Panel)
+        title_label = tk.Label(window_bar, text="Control Panel", fg="white", bg="#323232", font=("Arial", 12, "bold"))
+        title_label.pack(side="left", padx=5)
+
+        # Optional: Set Windows to support transparency and rounded corners via ctypes (works on Windows)
+        if platform.system() == "Windows":
+            if ctypes.windll.shell32.IsUserAnAdmin():
+                # This will work only on Windows
+                root.attributes("-transparentcolor", "#282828")
+                # root.overrideredirect(True)
+
+    # Call the function to create the window bar
+    generate_window_bar()
 
     def generate_top_bar():
         topbar_container = tk.Frame(root, bg="#242424", height=25, pady=0)
@@ -280,7 +325,7 @@ def create_gui(root, app, set_app):
         # Section we'll use to change between different devices
         device_icon = tk.Label(topbar_container, bg=unselected_col, image=root.device_image)
         device_icon.pack(side="left")
-        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "device","#161616"))
+        device_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "device", "#161616"))
         device_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "device"))
 
         # Icons attached to the right are the app icons
@@ -289,21 +334,13 @@ def create_gui(root, app, set_app):
         connect_icon = tk.Label(topbar_container, bg=selected_col if app == "template" else unselected_col, image=root.connect_image)
 
         # Assign callbacks to click events
-        #settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
         sd_icon.bind("<Button-1>", lambda e: on_icon_click("sd"))
-        #connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
+        settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
+        connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
 
         settings_icon.pack(side="right", padx=0)
-        settings_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "settings"))
-        settings_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "settings"))
-
         sd_icon.pack(side="right", padx=0)
-        sd_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "sd"))
-        sd_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "sd"))
-
         connect_icon.pack(side="right", padx=0)
-        connect_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "template"))
-        connect_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "template"))
 
     generate_top_bar()
 
