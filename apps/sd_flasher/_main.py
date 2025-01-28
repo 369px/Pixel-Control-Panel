@@ -14,8 +14,7 @@ def _main(root):
 
     sd_selector = ui.create_sd_selector(display,"top")
 
-    '''
-    brew install gcc
+
     update_btn = ui.Button(
         parent=menu_container,
         text="Update spruce",
@@ -27,9 +26,11 @@ def _main(root):
 
     install_btn = ui.Button(
         parent=menu_container,
-        text="Fresh Install (first time)",
+        text="Fresh install",
     ).create()
 
+
+    '''
     firmware_btn = ui.Button(
         parent=menu_container,
         text="Update Firmware",
