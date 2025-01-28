@@ -270,15 +270,16 @@ def create_gui(root, app, set_app):
 
     def generate_window_bar():
         # Create the window bar container
-        window_bar = tk.Frame(root, bg="#323232", height=40, relief="flat", bd=0)
+        window_bar = tk.Frame(root, bg="#323232", height=22, relief="flat", bd=0)
         window_bar.pack(side="top", fill="x", padx=0, pady=0)
+        root.wm_attributes('-alpha',0.977)
 
         # Create a Canvas to draw the round X button
-        close_button_canvas = tk.Canvas(window_bar, width=30, height=30, bg="#323232", bd=0, highlightthickness=0)
+        close_button_canvas = tk.Canvas(window_bar, width=20, height=22, bg="#323232", bd=0, highlightthickness=0)
         close_button_canvas.pack(side="left", padx=0)
 
         # Draw the circular "X" button (initial gray color)
-        circle_id = close_button_canvas.create_oval(9, 9, 21, 21, fill="#6b6b6b", outline="")  # Gray circle
+        circle_id = close_button_canvas.create_oval(7, 5, 19, 17, fill="#6b6b6b", outline="")  # Gray circle
 
         # Bind the click event to close the application
         close_button_canvas.bind("<Button-1>", lambda e: root.quit())
@@ -295,11 +296,11 @@ def create_gui(root, app, set_app):
         close_button_canvas.bind("<Enter>", on_enter_hover)  # Change to red on hover
         close_button_canvas.bind("<Leave>", on_leave_hover)  # Change back to gray when leaving hover
 
-        draggable_part = tk.Canvas(window_bar, width=270, height=30, bg="#323232", bd=0, highlightthickness=0)
+        draggable_part = tk.Canvas(window_bar, width=270, height=22, bg="#323232", bd=0, highlightthickness=0)
         draggable_part.pack(side="left", padx=0)
 
         # Add the window title inside the canvas
-        title_label = draggable_part.create_text(45, 15, text="Control Panel", fill="#cccccc", font=("Arial", 10, "bold"))
+        title_label = draggable_part.create_text(45, 11, text="Control Panel", fill="#cccccc", font=("Arial", 10, "bold"))
 
         # Variables for tracking the position
         drag_start_x = 0
