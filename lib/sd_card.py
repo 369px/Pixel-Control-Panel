@@ -57,9 +57,9 @@ def get_disk_identifier(volume_path):
     return None
 
 def refresh_sd_devices(sd_select, sd_dropdown, identifier):
-    sd_devices = detect_sd_card() or ["Plug in and select"]
-    if sd_devices[0] == "Plug in and select":
-        selected_sd = "Plug in and select"
+    sd_devices = detect_sd_card() or ["Click to refresh"]
+    if sd_devices[0] == "Click to refresh":
+        selected_sd = "Click to refresh"
     else:
         selected_sd = get_volume_name(identifier)
     menu = sd_dropdown['menu']

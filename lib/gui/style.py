@@ -186,8 +186,8 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     sd_dropdown.pack(side="right", pady=5, padx=(15,0))
     sd_select.set(sd_devices[0])
 
-
-    sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown))
+    identifier = sd.get_disk_identifier(sd_devices[0])
+    sd_dropdown.bind("<Button-1>", lambda e: sd.refresh_sd_devices(sd_select, sd_dropdown, identifier))
 
     return sd_select, sd_dropdown
 
