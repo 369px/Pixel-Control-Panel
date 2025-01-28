@@ -43,6 +43,6 @@ def _main(root):
         text="Format",
         command=lambda: display.confirmation(
             "Drop an unbricker image or\npress 'A' to download / install it",
-            lambda: start_formatting(sd_selector, display, sd.get_disk_identifier(sd_selector[0].get()))
+            lambda: start_formatting(sd_selector, display)
         )
     ).create()
