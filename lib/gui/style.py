@@ -273,30 +273,6 @@ def create_gui(root, app, set_app):
         window_bar = tk.Frame(root, bg="#323232", height=40, relief="flat", bd=0)
         window_bar.pack(side="top", fill="x", padx=0, pady=0)
 
-        # Variables for tracking the position
-        drag_start_x = 0
-        drag_start_y = 0
-
-        # Function to start dragging (called when mouse is pressed)
-        def on_drag_start(event):
-            nonlocal drag_start_x, drag_start_y
-            drag_start_x = event.x_root
-            drag_start_y = event.y_root
-
-        # Function to perform the dragging (called when mouse is moved)
-        def on_drag_motion(event):
-            nonlocal drag_start_x, drag_start_y
-            delta_x = event.x_root - drag_start_x
-            delta_y = event.y_root - drag_start_y
-            # Move the window by the delta in the x and y directions
-            root.geometry(f"+{root.winfo_x() + delta_x}+{root.winfo_y() + delta_y}")
-            drag_start_x = event.x_root  # Update the drag start position to continue dragging
-            drag_start_y = event.y_root
-
-        # Bind the drag start and motion to the window bar
-        window_bar.bind("<ButtonPress-1>", on_drag_start)
-        window_bar.bind("<B1-Motion>", on_drag_motion)
-
         # Create a Canvas to draw the round X button
         close_button_canvas = tk.Canvas(window_bar, width=30, height=30, bg="#323232", bd=0, highlightthickness=0)
         close_button_canvas.pack(side="left", padx=0)
@@ -319,9 +295,35 @@ def create_gui(root, app, set_app):
         close_button_canvas.bind("<Enter>", on_enter_hover)  # Change to red on hover
         close_button_canvas.bind("<Leave>", on_leave_hover)  # Change back to gray when leaving hover
 
-        # Window title (Control Panel)
-        title_label = tk.Label(window_bar, text="Control Panel", fg="white", bg="#323232", font=("Arial", 12, "bold"))
-        title_label.pack(side="left", padx=5)
+        draggable_part = tk.Canvas(window_bar, width=270, height=30, bg="#323232", bd=0, highlightthickness=0)
+        draggable_part.pack(side="left", padx=0)
+
+        # Add the window title inside the canvas
+        title_label = draggable_part.create_text(45, 15, text="Control Panel", fill="#cccccc", font=("Arial", 10, "bold"))
+
+        # Variables for tracking the position
+        drag_start_x = 0
+        drag_start_y = 0
+
+        # Function to start dragging (called when mouse is pressed)
+        def on_drag_start(event):
+            nonlocal drag_start_x, drag_start_y
+            drag_start_x = event.x_root
+            drag_start_y = event.y_root
+
+        # Function to perform the dragging (called when mouse is moved)
+        def on_drag_motion(event):
+            nonlocal drag_start_x, drag_start_y
+            delta_x = event.x_root - drag_start_x
+            delta_y = event.y_root - drag_start_y
+            # Move the window by the delta in the x and y directions
+            root.geometry(f"+{root.winfo_x() + delta_x}+{root.winfo_y() + delta_y}")
+            drag_start_x = event.x_root  # Update the drag start position to continue dragging
+            drag_start_y = event.y_root
+
+        # Bind the drag start and motion to the window bar
+        draggable_part.bind("<ButtonPress-1>", on_drag_start)
+        draggable_part.bind("<B1-Motion>", on_drag_motion)
 
         # Optional: Set Windows to support transparency and rounded corners via ctypes (works on Windows)
         if platform.system() == "Windows":
