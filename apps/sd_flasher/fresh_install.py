@@ -84,7 +84,7 @@ The .tmp_update folder is very important and without it spruce just isn't going 
 
 from apps.sd_flasher.update import get_latest_release_link
 
-def start_download(sd_selector, display):
+def start_installing(sd_selector, display):
     # Start download on a different thread
     download_thread = threading.Thread(target=_download_update, args=(display,))
     download_thread.start()

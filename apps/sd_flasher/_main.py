@@ -2,9 +2,11 @@ from lib.gui import style as ui, terminal
 #from lib.gui.button import BButton
 from apps.sd_flasher.update import start_update
 from apps.sd_flasher.format import start_formatting
+from apps.sd_flasher.fresh_install import start_installing
 import apps.sd_flasher.events as events
 import tkinter as tk
 import lib.sd_card as sd
+
 
 def _main(root):
     menu_container = tk.Frame(root)
@@ -27,6 +29,10 @@ def _main(root):
     install_btn = ui.Button(
         parent=menu_container,
         text="Fresh install",
+        command=lambda: display.confirmation(
+            "Drop an firmware download file or press 'A' to download the latest release",
+            lambda: start_update(sd_selector, display)
+        )
     ).create()
 
 
