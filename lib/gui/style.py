@@ -255,8 +255,18 @@ def create_gui(root, app, set_app):
     root.title("spruceUI Control Panel")
     root.resizable(False, False)
 
-    # Set app background color
-    root.configure(bg="#282828")
+    transparent_color = "#ffffff"  # init transparent color
+    window_color = "#242424"
+
+    # Set transparency based on platform
+    if platform.system() == "Windows":
+        root.attributes("-transparentcolor", '#369369')
+        root.config(bg="#369369")
+        transparent_color = "#202020"
+    elif platform.system() == "Darwin":
+        root.attributes("-transparent", True)
+        root.config(bg="systemTransparent")
+        transparent_color = "systemTransparent"
 
     # Set app icon
     icon = tk.PhotoImage(file="res/icon.png")
@@ -269,17 +279,21 @@ def create_gui(root, app, set_app):
     root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
 
     def generate_window_bar():
-        background_color="#202020"
-        # Create the window bar container
-        window_bar = tk.Frame(root, bg=background_color, height=22, relief="flat", bd=0)
+        # Create the window bar container with transparent background
+        window_bar = tk.Frame(root, bg=transparent_color, height=22, relief="flat", bd=0)
         window_bar.pack(side="top", fill="x", padx=0, pady=0)
 
-        # --- Close Button ---
-        close_button_canvas = tk.Canvas(window_bar, width=20, height=22, bg=background_color, bd=0, highlightthickness=0)
+        # --- Open Arc Transparency (left side) ---
+        open_arc_canvas = tk.Canvas(window_bar, width=20, height=22, bg=transparent_color, bd=0, highlightthickness=0)
+        open_arc_canvas.pack(side="left", padx=0)
+        open_arc_canvas.create_arc(0, 0, 40, 42, start=90, extent=180, fill=window_color, outline=transparent_color)
+
+        # --- Close Button (right side) ---
+        close_button_canvas = tk.Canvas(window_bar, width=20, height=22, bg=window_color, bd=0, highlightthickness=0)
         close_button_canvas.pack(side="left", padx=0)
 
         # Draw the circular "X" button (initial gray color)
-        close_circle_id = close_button_canvas.create_oval(7, 5, 19, 17, fill="#4a4a4a", outline="#242424")
+        close_circle_id = close_button_canvas.create_oval(0, 5, 12, 17, fill="#4a4a4a", outline="#242424")
 
         # Bind the click event to close the application
         close_button_canvas.bind("<Button-1>", lambda e: root.quit())
@@ -294,11 +308,17 @@ def create_gui(root, app, set_app):
         close_button_canvas.bind("<Enter>", close_on_enter_hover)
         close_button_canvas.bind("<Leave>", close_on_leave_hover)
 
-        # Aggiungi la logica per il drag della finestra
-        draggable_part = tk.Canvas(window_bar, width=270, height=22, bg=background_color, bd=0, highlightthickness=0)
-        draggable_part.pack(side="left", padx=0)
+        # --- Closed Arc Transparency (right side) ---
+        closed_arc_canvas = tk.Canvas(window_bar, width=21, height=22, bg=transparent_color, bd=0, highlightthickness=0)
+        closed_arc_canvas.pack(side="right", padx=0)
+        # Adjusting the arc to make it match the open arc in terms of curvature and positioning
+        closed_arc_canvas.create_arc(-21, 0, 20, 42, start=-90, extent=180, fill=window_color, outline=transparent_color)
 
-        title_label = draggable_part.create_text(130, 11, text="Control Panel", fill="#777777", font=("Arial", 10, "bold"))
+        # Aggiungi la logica per il drag della finestra
+        draggable_part = tk.Canvas(window_bar, height=22, bg=window_color, bd=0, highlightthickness=0)
+        draggable_part.pack(side="right", padx=0, fill="x")
+
+        title_label = draggable_part.create_text(114, 11, text="Control Panel", fill="#777777", font=("Arial", 10, "bold"))
 
         # Variables for tracking the position
         drag_start_x = 0
@@ -320,9 +340,6 @@ def create_gui(root, app, set_app):
 
         draggable_part.bind("<ButtonPress-1>", on_drag_start)
         draggable_part.bind("<B1-Motion>", on_drag_motion)
-
-        # OPTIONAL: Hide the window_bar when needed (you can use this logic)
-        # window_bar.pack_forget()  # This will hide the window bar
 
         return window_bar  # Return the reference to the window_bar
 
@@ -359,7 +376,22 @@ def create_gui(root, app, set_app):
     generate_top_bar()
 
     def generate_bottom_bar():
-        bottombar_container = tk.Frame(root, bg="#282828", height=9, pady=0)
+        bottombar_container = tk.Frame(root, bg=transparent_color, height=22, pady=0)
         bottombar_container.pack(side='bottom', fill="x", padx=0)
+
+        # --- Open Arc Transparency (left side) ---
+        open_arc_canvas = tk.Canvas(bottombar_container, width=20, height=22, bg=transparent_color, bd=0, highlightthickness=0)
+        open_arc_canvas.pack(side="left", padx=0)
+        open_arc_canvas.create_arc(0, -22, 40, 22, start=180, extent=180, fill=window_color, outline=transparent_color)
+
+        # --- Closed Arc Transparency (right side) ---
+        closed_arc_canvas = tk.Canvas(bottombar_container, width=20, height=22, bg=transparent_color, bd=0, highlightthickness=0)
+        closed_arc_canvas.pack(side="right", padx=0)
+        closed_arc_canvas.create_arc(-20, -22, 20, 22, start=-180, extent=180, fill=window_color, outline=transparent_color)
+
+        bottom_bar_window = tk.Canvas(bottombar_container, height=22, bg=window_color, bd=0,highlightthickness=0)
+        bottom_bar_window.pack(side="right", padx=0, fill="x")
+
+
 
     generate_bottom_bar()
