@@ -262,7 +262,7 @@ def create_gui(root, app, set_app):
     if platform.system() == "Windows":
         root.attributes("-transparentcolor", '#369369')
         root.config(bg="#369369")
-        transparent_color = "#202020"
+        transparent_color = "#369369"
     elif platform.system() == "Darwin":
         root.attributes("-transparent", True)
         root.config(bg="systemTransparent")
@@ -414,7 +414,6 @@ def create_gui(root, app, set_app):
         bottom_bar_window.bind("<Enter>", window_close_on_enter_hover)
         bottom_bar_window.bind("<Leave>", window_close_on_leave_hover)
         bottom_bar_window.bind("<ButtonRelease-1>", on_drag_end)
-
 
 
     generate_bottom_bar()
