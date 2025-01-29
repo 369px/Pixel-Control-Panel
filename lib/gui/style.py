@@ -180,7 +180,7 @@ def create_sd_selector(terminal,container_side="top",container_bg="#323232"):
     eject_icon.bind("<Leave>", lambda e: on_leave(e))
 
     sd_select = tk.StringVar()
-    sd_devices = sd.detect_sd_card() or ["Plug in and select"]
+    sd_devices = sd.detect_sd_card() or ["Click to refresh"]
     sd_dropdown = tk.OptionMenu(container_sd, sd_select, *sd_devices)
     sd_dropdown.config(width=20, highlightthickness=0, bd=0)
     sd_dropdown.pack(side="right", pady=5, padx=(15,0))
