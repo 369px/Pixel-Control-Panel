@@ -81,3 +81,10 @@ Ubuntu, at least for me, has the .Config and .Temp_Update folders hidden, you ne
 Common issue!
 The .tmp_update folder is very important and without it spruce just isn't going to work properly. If you are having issues, please check to see that this folder is present on your microSD card.
 '''
+
+from apps.sd_flasher.update import get_latest_release_link
+
+def start_download(sd_selector, display):
+    # Start download on a different thread
+    download_thread = threading.Thread(target=_download_update, args=(display,))
+    download_thread.start()
