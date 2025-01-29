@@ -278,6 +278,24 @@ def create_gui(root, app, set_app):
     root.sd_image = tk.PhotoImage(file="res/apps/sd.png")
     root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
 
+    # Variables for tracking the position
+    drag_start_x = 0
+    drag_start_y = 0
+
+    def on_drag_start(event):
+        nonlocal drag_start_x, drag_start_y
+        drag_start_x = event.x_root
+        drag_start_y = event.y_root
+
+    def on_drag_motion(event):
+        nonlocal drag_start_x, drag_start_y
+        delta_x = event.x_root - drag_start_x
+        delta_y = event.y_root - drag_start_y
+        # Move the window by the delta in the x and y directions
+        root.geometry(f"+{root.winfo_x() + delta_x}+{root.winfo_y() + delta_y}")
+        drag_start_x = event.x_root  # Update the drag start position to continue dragging
+        drag_start_y = event.y_root
+
     def generate_window_bar():
         # Create the window bar container with transparent background
         window_bar = tk.Frame(root, bg=transparent_color, height=21, relief="flat", bd=0)
@@ -319,24 +337,6 @@ def create_gui(root, app, set_app):
         draggable_part.pack(side="right", padx=0, fill="x")
 
         title_label = draggable_part.create_text(112, 11, text="Control Panel", fill="#777777", font=("Arial", 10, "bold"))
-
-        # Variables for tracking the position
-        drag_start_x = 0
-        drag_start_y = 0
-
-        def on_drag_start(event):
-            nonlocal drag_start_x, drag_start_y
-            drag_start_x = event.x_root
-            drag_start_y = event.y_root
-
-        def on_drag_motion(event):
-            nonlocal drag_start_x, drag_start_y
-            delta_x = event.x_root - drag_start_x
-            delta_y = event.y_root - drag_start_y
-            # Move the window by the delta in the x and y directions
-            root.geometry(f"+{root.winfo_x() + delta_x}+{root.winfo_y() + delta_y}")
-            drag_start_x = event.x_root  # Update the drag start position to continue dragging
-            drag_start_y = event.y_root
 
         draggable_part.bind("<ButtonPress-1>", on_drag_start)
         draggable_part.bind("<B1-Motion>", on_drag_motion)
@@ -391,6 +391,9 @@ def create_gui(root, app, set_app):
 
         bottom_bar_window = tk.Canvas(bottombar_container, height=21, bg=window_color, bd=0,highlightthickness=0)
         bottom_bar_window.pack(side="right", padx=0, fill="x")
+
+        bottom_bar_window.bind("<ButtonPress-1>", on_drag_start)
+        bottom_bar_window.bind("<B1-Motion>", on_drag_motion)
 
 
 
