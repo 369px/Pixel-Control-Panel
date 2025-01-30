@@ -56,6 +56,46 @@ def get_disk_identifier(volume_path):
             return None
     return None
 
+def get_volume_by_letter(letter):
+    try:
+        # Esegui il comando DiskPart per elencare i volumi
+        diskpart_script = "list volume"
+
+        process = subprocess.Popen(
+            ["diskpart"], 
+            stdin=subprocess.PIPE, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            text=True
+        )
+
+        # Invia il comando al processo
+        stdout, stderr = process.communicate(input=diskpart_script)
+
+        if stderr:
+            print(f"Errore: {stderr}")
+            return None
+
+        # Filtriamo l'output per ignorare intestazioni e altre righe non pertinenti
+        volume_lines = []
+        for line in stdout.splitlines():
+            line = line.strip()
+            if line and line.startswith("Volume"):  # Solo righe con informazioni sui volumi
+                volume_lines.append(line)
+
+        # Cerca la lettera specificata nei volumi
+        for line in volume_lines:
+            if letter in line:
+                print(f"Volume trovato per {letter}: {line}")
+                return line
+
+        print(f"Volume con lettera {letter} non trovato.")
+        return None
+
+    except Exception as e:
+        print(f"Errore: {str(e)}")
+        return None
+
 def refresh_sd_devices(sd_select, sd_dropdown, identifier):
     sd_devices = detect_sd_card() or ["Click to refresh"]
     if sd_devices[0] == "Click to refresh":
@@ -157,7 +197,7 @@ def get_volume_name(disk_identifier):
 def format_sd_card(sd_path, display, callback, sd_selector):
     """Automatically format SD Card."""
     os_type = platform.system()
-
+    # print(sd_path)
     try:
         if os_type == "Windows":
             # Chiedi all'utente il nome del volume
@@ -167,10 +207,11 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     return
                 volume_name = volume_name.upper()  # Converti in maiuscolo per evitare errori
                 identifier = get_disk_identifier(volume_name)
+                
                 # Crea lo script di formattazione
                 script = f"""
                 select volume {sd_path[0]}
-                format fs=fat32 quick label={volume_name}
+                format fs=fat32 quick label={volume_name} 
                 exit
                 """
                 try:
@@ -179,7 +220,7 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                         script_file.write(script)
                     subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
                     os.remove("format_script.txt")
-                    refresh_sd_devices(sd_selector[0], sd_selector[1], identifier)
+                    # refresh_sd_devices(sd_selector[0], sd_selector[1], identifier)
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
                     try:
                         callback()
@@ -194,7 +235,7 @@ def format_sd_card(sd_path, display, callback, sd_selector):
             # Chiedi il nome del volume
             display.user_input("Enter the name for your new volume:", on_volume_name_enter)
 
-        if os_type == "Darwin":
+        elif os_type == "Darwin":
             # Get disk identifier for macOS
             disk_identifier = get_disk_identifier(sd_path)
             if disk_identifier:
@@ -237,7 +278,6 @@ def format_sd_card(sd_path, display, callback, sd_selector):
             subprocess.run(["sudo", "mkfs.vfat", "-F", "32", sd_path], check=True)
             callback()  # Call the callback after successful formatting
             return True
-
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Error", f"Error while formatting: {e}")
         print(e.stderr)  # Show detailed error

@@ -82,9 +82,77 @@ Common issue!
 The .tmp_update folder is very important and without it spruce just isn't going to work properly. If you are having issues, please check to see that this folder is present on your microSD card.
 '''
 
+import requests, os, zipfile, threading, asyncio, subprocess, time
+
 from apps.sd_flasher.update import get_latest_release_link
+from lib.sd_card import format_sd_card, get_volume_by_letter
 
 def start_installing(sd_selector, display):
+
+    # Step 1: Get the selected SD card path
+    print("select sd...")
+    sd_card_path = sd_selector[0].get()
+
+    if not sd_card_path or sd_card_path == "Plug in and select":
+        display.message("Please select a valid SD card.")
+        return  # Stop the process if no SD card is selected
+
+    # Step 2: Format the SD card to FAT32
+    try:
+        display.message(f"Formatting {sd_card_path} to FAT32...")
+
+        # Call format_sd_card and pass None as callback, because we don't need to flash anything
+        format_sd_card(sd_card_path, display, None, sd_selector)
+    except Exception as e:
+        display.message(f"Error formatting SD card: {e}")
+        print(f"Error formatting SD card: {e}")
+        return  # Stop the process if formatting fails
+
     # Start download on a different thread
-    download_thread = threading.Thread(target=_download_update, args=(display,))
+    download_thread = threading.Thread(target=_download_update, args=(sd_selector, display))
     download_thread.start()
+
+def _download_update(sd_selector, display): 
+    try: 
+        local_filename = os.path.join(sd_selector[0].get(), 'spruce.zip')
+
+        print("Start download...")
+
+        response = requests.get(get_latest_release_link(display), stream=True)
+        response.raise_for_status()
+
+
+        total_size = int(response.headers.get("Content-Length", 0))
+        downloaded_size = 0
+
+        chunk_size = 1024  
+        update_interval = 3 * 1024 * 1024  
+        last_update = 0
+
+            # Scarica il file a blocchi
+        with open(local_filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
+                    downloaded_size += len(chunk)
+
+                    # Aggiorna la terminale ogni volta che sono stati scaricati almeno 3 MB
+                    if downloaded_size - last_update >= update_interval:
+                        display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
+                        last_update = downloaded_size
+
+        display.message("Download completed, init unzip!")
+
+        # Estrazione del file ZIP
+        extract_path = os.path.join(sd_selector[0].get(), 'spruce')
+
+        if not os.path.exists(extract_path):
+            os.makedirs(extract_path)
+
+        with zipfile.ZipFile(local_filename, 'r') as zip_ref:
+            zip_ref.extractall(extract_path)
+
+        print(f"Extraction complete in {extract_path}.")
+    
+    except Exception as e: 
+        print("Exception:", e)
