@@ -108,8 +108,6 @@ def _download_update(sd_selector, display):
 
         print("Start download...")
 
-
-        print(get_latest_release_link(display))
         response = requests.get(get_latest_release_link(display), stream=True)
         response.raise_for_status()
 
@@ -130,7 +128,6 @@ def _download_update(sd_selector, display):
                     # Aggiorna la terminale ogni volta che sono stati scaricati almeno 3 MB
                     if downloaded_size - last_update >= update_interval:
                         display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
-                        print(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
                         last_update = downloaded_size
 
         display.message("Download completed, init unzip!")

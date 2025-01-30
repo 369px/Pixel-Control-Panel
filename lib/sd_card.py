@@ -6,7 +6,7 @@ import ctypes
 from tkinter import simpledialog, messagebox
 import lib.gui.style as ui
 import re
-
+import threading
 
 def detect_sd_card():
     """Detect connected SD Cards."""
@@ -228,7 +228,8 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     # refresh_sd_devices(sd_selector[0], sd_selector[1], identifier)
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
                     try:
-                        callback()
+                        callback_thread = threading.Thread(target=callback)
+                        callback_thread.start()
                     except:
                         traceback.print_exc()
                     return True
