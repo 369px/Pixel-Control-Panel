@@ -1,7 +1,6 @@
 from lib.gui import style as ui, terminal
 #from lib.gui.button import BButton
 from apps.sd_flasher.update import start_update
-from apps.sd_flasher.fresh_install import start_installing
 from apps.sd_flasher.format import start_formatting
 from apps.sd_flasher.fresh_install import start_installing
 import apps.sd_flasher.events as events
@@ -31,7 +30,7 @@ def _main(root):
         parent=menu_container,
         text="Fresh install",
         command=lambda: display.confirmation(
-            "Drop an firmware download file or press 'A' to download the latest release",
+            "Drop a firmware file or press 'A' to download the latest release",
             lambda: start_installing(sd_selector, display)
         )
     ).create()
