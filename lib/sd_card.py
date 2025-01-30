@@ -62,10 +62,10 @@ def get_volume_by_letter(letter):
         diskpart_script = "list volume"
 
         process = subprocess.Popen(
-            ["diskpart"], 
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
+            ["diskpart"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True
         )
 
@@ -105,7 +105,8 @@ def refresh_sd_devices(sd_select, sd_dropdown, identifier):
     menu = sd_dropdown['menu']
     menu.delete(0, 'end')
     for device in sd_devices:
-        menu.add_command(label=device, command=tk._setit(sd_select, device))
+        if device != None:
+            menu.add_command(label=device, command=tk._setit(sd_select, device))
     sd_select.set(selected_sd)
 
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
@@ -199,7 +200,7 @@ def format_sd_card(sd_path, display, callback, sd_selector):
     """Automatically format SD Card."""
     os_type = platform.system()
     # print(sd_path)
-    if sd_selector[0].get() == "Click to refresh": 
+    if sd_selector[0].get() == "Click to refresh":
         display.message("Formatting Click to refresh to FAT32… did you plug-in an sd?")
         return False
     try:
@@ -211,11 +212,11 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     return
                 volume_name = volume_name.upper()  # Converti in maiuscolo per evitare errori
                 identifier = get_disk_identifier(volume_name)
-                
+
                 # Crea lo script di formattazione
                 script = f"""
                 select volume {sd_path[0]}
-                format fs=fat32 quick label={volume_name} 
+                format fs=fat32 quick label={volume_name}
                 exit
                 """
                 try:
