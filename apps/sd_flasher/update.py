@@ -31,7 +31,7 @@ def get_latest_release_link(display):
             if line.startswith("RELEASE_LINK="):
                 # Extract link from row
                 release_link = line.split("=", 1)[1].strip()
-                return release_link
+                return release_link.replace("7z", "zip")
 
         # If not found, return this
         display.message("RELEASE LINK not found in GH repo...")

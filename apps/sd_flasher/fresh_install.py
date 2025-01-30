@@ -83,7 +83,7 @@ The .tmp_update folder is very important and without it spruce just isn't going 
 '''
 
 import requests, os, zipfile, threading, asyncio, subprocess, time
-from pyunpack import Archive
+import zipfile
 
 from apps.sd_flasher.update import get_latest_release_link
 from apps.sd_flasher.format import start_formatting
@@ -94,20 +94,22 @@ def start_installing(sd_selector, display):
 
     def call_download(): 
         _download_update(sd_selector, display)
-    # start_formatting(sd_selector, display, call_download)
 
     download_thread = threading.Thread(target=start_formatting, args=(sd_selector, display, call_download))
     download_thread.start()
+
 
 def _download_update(sd_selector, display): 
     if sd_selector[0].get() == "Click to refresh": 
         display.message("Formatting Click to refresh to FAT32… did you plug-in an sd?")
         return 
     try: 
-        local_filename = os.path.join(sd_selector[0].get(), 'spruce.7z')
+        local_filename = os.path.join(sd_selector[0].get(), 'spruce.zip')
 
         print("Start download...")
 
+
+        print(get_latest_release_link(display))
         response = requests.get(get_latest_release_link(display), stream=True)
         response.raise_for_status()
 
@@ -128,6 +130,7 @@ def _download_update(sd_selector, display):
                     # Aggiorna la terminale ogni volta che sono stati scaricati almeno 3 MB
                     if downloaded_size - last_update >= update_interval:
                         display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
+                        print(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
                         last_update = downloaded_size
 
         display.message("Download completed, init unzip!")
@@ -138,12 +141,12 @@ def _download_update(sd_selector, display):
         if not os.path.exists(extract_path):
             os.makedirs(extract_path)
 
+        with zipfile.ZipFile(local_filename, 'r') as z:
+            z.extractall(path=extract_path)
+
         try: 
-           Archive(local_filename).extractall(extract_path)
+            os.remove(local_filename)
         except: 
-            display.message("Error extracting files.")
-            return 
-        print(f"Extraction complete in {extract_path}.")
-        
+            pass        
     except Exception as e: 
         print("Exception:", e)
