@@ -23,9 +23,7 @@ def start_formatting(sd_selector, display, callback=None):
     try:
         display.message(f"Formatting {sd_card_path} to FAT32...")
 
-        # Call format_sd_card and pass None as callback, because we don't need to flash anything
         if not sd_card.format_sd_card(sd_card_path, display, callback, sd_selector):
-            print(f"Error formatting SD card: {sd_card_path}")
             return  # Stop the process if formatting fails
 
         display.message(f"SD card {sd_card_path} formatted successfully!")
@@ -35,7 +33,7 @@ def start_formatting(sd_selector, display, callback=None):
         print(f"Error formatting SD card: {e}")
         return  # Stop the process if formatting fails
 
-
+''' 
 OLD  PROCESS THAT DOWNLOADS UNBRICKER IMAGE AND FLASHES IT INTO THE SD CARD
 
 

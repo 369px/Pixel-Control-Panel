@@ -83,38 +83,28 @@ The .tmp_update folder is very important and without it spruce just isn't going 
 '''
 
 import requests, os, zipfile, threading, asyncio, subprocess, time
+from pyunpack import Archive
 
 from apps.sd_flasher.update import get_latest_release_link
+from apps.sd_flasher.format import start_formatting
 from lib.sd_card import format_sd_card, get_volume_by_letter
 
 def start_installing(sd_selector, display):
-
-    # Step 1: Get the selected SD card path
-    print("select sd...")
-    sd_card_path = sd_selector[0].get()
-
-    if not sd_card_path or sd_card_path == "Plug in and select":
-        display.message("Please select a valid SD card.")
-        return  # Stop the process if no SD card is selected
-
-    # Step 2: Format the SD card to FAT32
-    try:
-        display.message(f"Formatting {sd_card_path} to FAT32...")
-
-        # Call format_sd_card and pass None as callback, because we don't need to flash anything
-        format_sd_card(sd_card_path, display, None, sd_selector)
-    except Exception as e:
-        display.message(f"Error formatting SD card: {e}")
-        print(f"Error formatting SD card: {e}")
-        return  # Stop the process if formatting fails
-
     # Start download on a different thread
-    download_thread = threading.Thread(target=_download_update, args=(sd_selector, display))
+
+    def call_download(): 
+        _download_update(sd_selector, display)
+    # start_formatting(sd_selector, display, call_download)
+
+    download_thread = threading.Thread(target=start_formatting, args=(sd_selector, display, call_download))
     download_thread.start()
 
 def _download_update(sd_selector, display): 
+    if sd_selector[0].get() == "Click to refresh": 
+        display.message("Formatting Click to refresh to FAT32… did you plug-in an sd?")
+        return 
     try: 
-        local_filename = os.path.join(sd_selector[0].get(), 'spruce.zip')
+        local_filename = os.path.join(sd_selector[0].get(), 'spruce.7z')
 
         print("Start download...")
 
@@ -129,7 +119,6 @@ def _download_update(sd_selector, display):
         update_interval = 3 * 1024 * 1024  
         last_update = 0
 
-            # Scarica il file a blocchi
         with open(local_filename, 'wb') as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:
@@ -149,10 +138,12 @@ def _download_update(sd_selector, display):
         if not os.path.exists(extract_path):
             os.makedirs(extract_path)
 
-        with zipfile.ZipFile(local_filename, 'r') as zip_ref:
-            zip_ref.extractall(extract_path)
-
+        try: 
+           Archive(local_filename).extractall(extract_path)
+        except: 
+            display.message("Error extracting files.")
+            return 
         print(f"Extraction complete in {extract_path}.")
-    
+        
     except Exception as e: 
         print("Exception:", e)

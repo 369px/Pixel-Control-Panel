@@ -153,9 +153,6 @@ class TerminalCanvas(tk.Canvas):
         # Impostare il focus sull'input per facilitare la digitazione
         self.input_entry.focus()
 
-
-
-
     def message(self, message: str, x=1, y=1):
         '''
         Clears the display container and shows a new message.

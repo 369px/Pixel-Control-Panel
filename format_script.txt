@@ -1,5 +1,0 @@
-
-                select volume D
-                format fs=fat32 quick label=AA 
-                exit
-                

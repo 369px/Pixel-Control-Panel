@@ -194,10 +194,14 @@ def get_volume_name(disk_identifier):
 
     return None
 
+import traceback
 def format_sd_card(sd_path, display, callback, sd_selector):
     """Automatically format SD Card."""
     os_type = platform.system()
     # print(sd_path)
+    if sd_selector[0].get() == "Click to refresh": 
+        display.message("Formatting Click to refresh to FAT32… did you plug-in an sd?")
+        return False
     try:
         if os_type == "Windows":
             # Chiedi all'utente il nome del volume
@@ -225,7 +229,7 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     try:
                         callback()
                     except:
-                        pass
+                        traceback.print_exc()
                     return True
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
@@ -234,7 +238,6 @@ def format_sd_card(sd_path, display, callback, sd_selector):
 
             # Chiedi il nome del volume
             display.user_input("Enter the name for your new volume:", on_volume_name_enter)
-
         elif os_type == "Darwin":
             # Get disk identifier for macOS
             disk_identifier = get_disk_identifier(sd_path)
