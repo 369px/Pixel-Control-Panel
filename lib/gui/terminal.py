@@ -44,14 +44,14 @@ class TerminalCanvas(tk.Canvas):
         self.cancel_container.place(x=width - 139, y=height - 22, anchor="nw")
         cancel_img = tk.Label(self.cancel_container, image=cancel_img_tk, bg="#323232")
         cancel_img.pack(side="left")
-        cancel_text = tk.Label(self.cancel_container, text="Cancel", font=("Arial", 12), fg="#7c6f64")
+        cancel_text = tk.Label(self.cancel_container, text="Cancel", font=("Arial", 12), fg="#7c6f64",bg="#323232")
         cancel_text.pack(side="left")
 
         confirm_img_tk = ImageTk.PhotoImage(confirm_image_resized)
         self.confirm_container = tk.Frame(self, bd=0)  # Confirm button container
         confirm_img = tk.Label(self.confirm_container, image=confirm_img_tk, bg="#323232")
         confirm_img.pack(side="left")
-        confirm_text = tk.Label(self.confirm_container, text="Confirm", font=("Arial", 12), fg="#7c6f64")
+        confirm_text = tk.Label(self.confirm_container, text="Confirm", font=("Arial", 12), fg="#7c6f64",bg="#323232")
         confirm_text.pack(side="left")
 
         self.confirm_container.place(x=width - 71, y=height - 22, anchor="nw")
