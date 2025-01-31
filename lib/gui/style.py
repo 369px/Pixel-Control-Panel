@@ -258,6 +258,13 @@ def create_gui(root, app, set_app):
     transparent_color = "#ffffff"  # init transparent color
     window_color = "#242424"
 
+    root_background = tk.Canvas(root, width=300,
+                                height=369-42, bg="#282828",
+                                bd=0, highlightthickness=0)
+
+    root_background.place(x=0,y=21)
+
+
     # Set transparency based on platform
     if platform.system() == "Windows":
         root.attributes("-transparentcolor", '#369369')
