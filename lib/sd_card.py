@@ -195,6 +195,22 @@ def get_volume_name(disk_identifier):
 
     return None
 
+def check_password(password: str):
+    """verify password with sudo"""
+    try:
+        result = subprocess.run(
+            f"echo {password} | sudo -S -v",
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            return True  # Password corretta
+        else:
+            return False  # Password errata
+    except Exception:
+        return False
+
 import traceback
 def format_sd_card(sd_path, display, callback, sd_selector):
     """Automatically format SD Card."""
@@ -235,7 +251,6 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     return True
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
-                    print(e.stderr)
                     return False
 
             # Chiedi il nome del volume
@@ -245,6 +260,9 @@ def format_sd_card(sd_path, display, callback, sd_selector):
             disk_identifier = get_disk_identifier(sd_path)
             if disk_identifier:
                 def on_password_enter(password: str):
+                    if not check_password(password):  # Controlla se la password è valida
+                        display.message("Error, incorrect password! Please try again.")
+                        return
                     # Chiediamo all'utente di inserire un nome valido per il nuovo volume
                     def on_volume_name_enter(volume_name):
                         if not volume_name or len(volume_name.strip()) == 0:
@@ -256,9 +274,7 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                         if match:
                             disk_command = f"diskutil eraseDisk FAT32 \"{v}\" MBRFormat /dev/{match.group(1)}"
                             format_command = f"echo {password} | sudo -S {disk_command}"
-                            print(f"Running command: {format_command}")
                             result = subprocess.run(format_command, check=True, shell=True, capture_output=True, text=True)
-                            print(result.stdout)  # Debug output
                             refresh_sd_devices(sd_selector[0], sd_selector[1], disk_identifier)
                             display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{v}'!")
                             try:
