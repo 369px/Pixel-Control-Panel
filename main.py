@@ -49,7 +49,6 @@ def main():
 
     ui.window()  # Center window at startup
 
-
     root.overrideredirect(True)
     ui.create_gui(root, app, lambda new_app: set_app(new_app, root))
     generate_page(root)
