@@ -88,6 +88,7 @@ import zipfile
 from apps.sd_flasher.update import get_latest_release_link
 from apps.sd_flasher.format import start_formatting
 from lib.sd_card import format_sd_card, get_volume_by_letter
+from lib.progress import ProgressHandler
 
 def start_installing(sd_selector, display):
     # Start download on a different thread
@@ -130,17 +131,17 @@ def _download_update(sd_selector, display):
                         display.message(f"{downloaded_size / (1024 * 1024):.0f}/{total_size / (1024 * 1024):.0f} MB")
                         last_update = downloaded_size
 
-        display.message("Download completed, init unzip!")
+        display.message("Download completed\nInit unzip!")
 
         # Estrazione del file ZIP
-        extract_path = os.path.join(sd_selector[0].get(), 'spruce')
-
-        if not os.path.exists(extract_path):
-            os.makedirs(extract_path)
+        extract_path = sd_selector[0].get()
 
         with zipfile.ZipFile(local_filename, 'r') as z:
-            z.extractall(path=extract_path)
+            handler = ProgressHandler(z, display)
+            for member in z.namelist():
+                handler.extract_with_progress(member, extract_path)
 
+        display.message("Unzip process complete\nSpruce installed!")
         try: 
             os.remove(local_filename)
         except: 
