@@ -262,9 +262,10 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                             refresh_sd_devices(sd_selector[0], sd_selector[1], disk_identifier)
                             display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{v}'!")
                             try:
-                                callback()  # Call the callback after successful formatting
+                                callback_thread = threading.Thread(target=callback)
+                                callback_thread.start()
                             except:
-                                pass
+                                traceback.print_exc()
                             return True
                         else:
                             messagebox.showerror("Error", "Unable to parse disk identifier correctly.")
@@ -281,7 +282,11 @@ def format_sd_card(sd_path, display, callback, sd_selector):
 
         elif os_type == "Linux":
             subprocess.run(["sudo", "mkfs.vfat", "-F", "32", sd_path], check=True)
-            callback()  # Call the callback after successful formatting
+            try:
+                callback_thread = threading.Thread(target=callback)
+                callback_thread.start()
+            except:
+                traceback.print_exc()
             return True
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Error", f"Error while formatting: {e}")
