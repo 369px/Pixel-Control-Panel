@@ -1,6 +1,6 @@
     ---     FEATURES    ---
 
- -
+ - COOL SD SELECTOR
  -
 
 
@@ -12,5 +12,5 @@
 
     ---     BUGFIXES    ---
 
- -
+ - FIX GUI WINDOWS, TRANSPARENT BORDER AND SOME LINES
  -
