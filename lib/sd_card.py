@@ -112,7 +112,7 @@ def refresh_sd_devices(sd_select, sd_dropdown, identifier):
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()
     identifier = get_disk_identifier(sd_device)
-    if sd_device != "Plug in and select":
+    if sd_device != "Click to refresh":
         try:
             if system_os == "Linux":
                 os.system(f"umount {sd_device}")

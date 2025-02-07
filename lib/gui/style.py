@@ -92,7 +92,7 @@ class Button:
         if self.grid:
             # Use grid layout if grid_position is defined
             row, col = self.grid
-            self.container.grid(row=row, column=col, padx=10, pady=5, sticky="nsew")
+            self.container.grid(row=row, column=col, padx=1, pady=1, sticky="nsew")
         else:
             # Use pack layout (top or bottom) if no grid_position
             if self.side == "bottom":
@@ -102,7 +102,7 @@ class Button:
 
         # Create the label inside the container (acting as a button)
         label = tk.Label(self.container, text=self.text, bg=self.bg, fg=self.fg, font=self.font, width=20)
-        label.pack(fill="both", expand=True)
+        label.pack(fill="both", expand=True,padx=0)
 
         # Bind the command to the label
         label.bind("<Button-1>", lambda e: self.command())
@@ -257,6 +257,7 @@ def create_gui(root, app, set_app):
 
     transparent_color = "#ffffff"  # init transparent color
     window_color = "#242424"
+    border_color="#121212"
 
     root_background = tk.Canvas(root, width=300,
                                 height=369-42, bg="#282828",
@@ -316,19 +317,26 @@ def create_gui(root, app, set_app):
         e.widget.config(cursor="arrow")  # Change to red
 
 
+    def arc_border(canvas,x1,y1,x2,y2,sstart,eextent):
+        canvas.create_arc(x1, y1, x2, y2, start=sstart, extent=eextent,fill=border_color, outline=transparent_color)
+
+
     def generate_window_bar():
         # Create the window bar container with transparent background
-        window_bar = tk.Frame(root, bg=transparent_color, height=21, relief="flat", bd=0)
-        window_bar.pack(side="top", fill="x", padx=0, pady=0)
+        window_bar = tk.Frame(bg=transparent_color, height=21, relief="flat")
+        window_bar.pack(side="top", fill="x", padx=0, pady=0, anchor="n")
 
         # --- Open Arc Transparency (left side) ---
         open_arc_canvas = tk.Canvas(window_bar, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
-        open_arc_canvas.pack(side="left", padx=0)
-        open_arc_canvas.create_arc(-1, -1, 42, 42, start=90, extent=180, fill=window_color, outline=transparent_color)
+        open_arc_canvas.pack(side="left", padx=0, anchor="nw")
+        arc_border(open_arc_canvas,0-1,0-1,42-1,42-1, 90,180)
+        open_arc_canvas.create_arc(0, 0, 42, 42, start=90, extent=180, fill=window_color, outline=transparent_color)
 
         # --- Close Button (right side) ---
         close_button_canvas = tk.Canvas(window_bar, width=21, height=21, bg=window_color, bd=0, highlightthickness=0)
         close_button_canvas.pack(side="left", padx=0)
+
+        close_btn_border = close_button_canvas.create_line(-1,0,21,0,fill=border_color)
 
         # Draw the circular "X" button (initial gray color)
         close_circle_id = close_button_canvas.create_oval(2, 5, 14, 17, fill="#4a4a4a", outline="#242424")
@@ -351,11 +359,14 @@ def create_gui(root, app, set_app):
         closed_arc_canvas = tk.Canvas(window_bar, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         closed_arc_canvas.pack(side="right", padx=0)
         # Adjusting the arc to make it match the open arc in terms of curvature and positioning
-        closed_arc_canvas.create_arc(-22, -1, 21, 42, start=-90, extent=180, fill=window_color, outline=transparent_color)
+        arc_border(closed_arc_canvas,-23+1,0-1,20+1,42-1, -90,180)
+        closed_arc_canvas.create_arc(-23, 0, 20, 42, start=-90, extent=180, fill=window_color, outline=transparent_color)
 
-        # Aggiungi la logica per il drag della finestra
+        # Draggable part (adjusted)
         draggable_part = tk.Canvas(window_bar, height=21, bg=window_color, bd=0, highlightthickness=0)
-        draggable_part.pack(side="right", padx=0, fill="x")
+        draggable_part.pack(side="left", fill="x", padx=0, expand=True)  # Allow it to expand and fill space
+
+        draggable_border_top = draggable_part.create_line(-1, 0, 369, 0, fill=border_color)
 
         title_label = draggable_part.create_text(112, 11, text="Control Panel", fill="#777777", font=("Arial", 10, "bold"))
 
@@ -371,7 +382,7 @@ def create_gui(root, app, set_app):
     window_bar = generate_window_bar()
 
     def generate_top_bar():
-        topbar_container = tk.Frame(root, bg="#242424", height=25, pady=0)
+        topbar_container = tk.Frame(bg="#242424", height=25, pady=0)
         topbar_container.pack(side='top', fill="x", padx=0)
 
         selected_col = "#323232"
@@ -406,15 +417,19 @@ def create_gui(root, app, set_app):
         # --- Open Arc Transparency (left side) ---
         open_arc_canvas = tk.Canvas(bottombar_container, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         open_arc_canvas.pack(side="left", padx=0)
-        open_arc_canvas.create_arc(-1, -23, 40, 22, start=180, extent=180, fill=window_color, outline=transparent_color)
+        arc_border(open_arc_canvas,0-1,-25+1,41-1,19+1, 180,180)
+        open_arc_canvas.create_arc(0, -25, 41, 19, start=180, extent=180, fill=window_color, outline=transparent_color)
 
         # --- Closed Arc Transparency (right side) ---
         closed_arc_canvas = tk.Canvas(bottombar_container, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         closed_arc_canvas.pack(side="right", padx=0)
-        closed_arc_canvas.create_arc(-20, -23, 21, 22, start=-180, extent=180, fill=window_color, outline=transparent_color)
+        arc_border(closed_arc_canvas,-21+1,-25+1,20+1,19+1, -180,180)
+        closed_arc_canvas.create_arc(-21, -25, 20, 19, start=-180, extent=180, fill=window_color, outline=transparent_color)
 
-        bottom_bar_window = tk.Canvas(bottombar_container, height=21, bg=window_color, bd=0,highlightthickness=0)
+        bottom_bar_window = tk.Canvas(bottombar_container, height=20, bg=window_color, bd=0,highlightthickness=0)
         bottom_bar_window.pack(side="right", padx=0, fill="x")
+
+        draggable_border_bottom = bottom_bar_window.create_line(-1,19,369,19,fill=border_color)
 
         bottom_bar_window.bind("<ButtonPress-1>", on_drag_start)
         bottom_bar_window.bind("<B1-Motion>", on_drag_motion)
@@ -424,3 +439,8 @@ def create_gui(root, app, set_app):
 
 
     generate_bottom_bar()
+
+
+def draw_after_page(root):
+    border_left = tk.Canvas(root,width=1,height=100,bg="#121212",bd=0,highlightthickness=0)
+    border_left.place(relx=0,rely=0,height=355,anchor="w")

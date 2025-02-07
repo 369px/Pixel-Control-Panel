@@ -9,12 +9,6 @@
 import tkinter as tk
 
 class GUIContext:
-    '''
-    Used to manage context and remove need of passing root everytime
-
-    Example:
-    - root = context.get_root()
-    '''
     def __init__(self):
         self.root = None
 

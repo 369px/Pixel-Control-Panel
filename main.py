@@ -3,6 +3,7 @@ import threading
 import lib.gui.style as ui
 from lib.gui.context import context
 import apps.sd_flasher._main as sd_app
+import apps.settings._main as settings_app
 import apps.template._main as template_app
 from lib.spruce import app, window_geometry, device
 
@@ -11,7 +12,7 @@ def generate_page(root):
     if app == "sd":
         sd_app._main(root)
     elif app == "settings":
-        return
+        settings_app._main(root)
     elif app=="template":
         #template_app._main(root)
         return
@@ -50,10 +51,11 @@ def main():
     ui.window()  # Center window at startup
 
     root.overrideredirect(True)
-    root.focus_force()
+    #root.focus_force()
 
     ui.create_gui(root, app, lambda new_app: set_app(new_app, root))
     generate_page(root)
+    #ui.draw_after_page(root)
 
     root.mainloop()
 

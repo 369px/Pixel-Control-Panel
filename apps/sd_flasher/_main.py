@@ -10,7 +10,7 @@ import lib.sd_card as sd
 
 def _main(root):
     menu_container = tk.Frame(root)
-    menu_container.pack(fill="both", expand=True, side="bottom")
+    menu_container.pack(fill="both", expand=True, side="bottom",padx=1)
 
     display = terminal.create("bottom")
 
@@ -30,11 +30,10 @@ def _main(root):
         parent=menu_container,
         text="Fresh install",
         command=lambda: display.confirmation(
-            "Drop a firmware file or press 'A' to download the latest release",
+            "Drop a zip file or press 'A' to download the latest release",
             lambda: start_installing(sd_selector, display)
         )
     ).create()
-
 
     '''
     firmware_btn = ui.Button(
@@ -45,6 +44,7 @@ def _main(root):
             lambda: flash_unbricker(sd_selector, display))
     ).create()
     '''
+
     unbrick_btn = ui.Button(
         parent=menu_container,
         text="Format",

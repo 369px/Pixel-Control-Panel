@@ -15,7 +15,7 @@ def start_formatting(sd_selector, display, callback=None):
     print("select sd...")
     sd_card_path = sd_selector[0].get()
 
-    if not sd_card_path or sd_card_path == "Plug in and select":
+    if not sd_card_path or sd_card_path == "Click to refresh":
         display.message("Please select a valid SD card.")
         return  # Stop the process if no SD card is selected
 
