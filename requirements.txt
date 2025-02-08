@@ -2,4 +2,4 @@ py7zr
 requests
 Pillow
 psutil
-
+tkinterdnd2

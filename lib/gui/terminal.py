@@ -2,6 +2,7 @@ from PIL import Image, ImageTk
 from lib.gui.context import context
 import tkinter as tk
 import tkinter.font as tkfont
+from tkinterdnd2 import TkinterDnD, DND_FILES
 import textwrap
 
 # Subclass for custom Canvas that includes 'text_items' and other stuff
@@ -15,6 +16,7 @@ class TerminalCanvas(tk.Canvas):
         self.cancel_container = None  # Cancel button container
         self.confirm_container = None  # Confirm button container
         self.input_entry = None
+        self.dropped_file = None
 
     def confirmation(self, message, event):
         '''
@@ -22,8 +24,7 @@ class TerminalCanvas(tk.Canvas):
         - "Cancel" with a Cancel icon
         - "Confirm" with a Confirm icon
         '''
-
-        self._on_cancel()
+        self.destroy_elements()
         self.cancelled = False  # Restore flag when new confirm message is called
 
         self.message(message)
@@ -62,12 +63,32 @@ class TerminalCanvas(tk.Canvas):
 
         # Activate button click events
         self.cancel_container.bind("<Button-1>", lambda e: self._on_cancel())
+
+        # Pass the file path when confirming
         self.confirm_container.bind("<Button-1>", lambda e: self._on_confirm(event))
 
         # Activate keyboard click events [Cancel (B) / Confirm (A)]
         root.bind("<b>", lambda e: self._on_cancel())
         root.bind("<a>", lambda e: self._on_confirm(event))
 
+        # Set up file drop handling for drag-and-drop event
+        _setup_file_drop(self,event)
+
+
+    def _on_confirm(self, event):
+        '''Handler for confirm action'''
+        if self.cancelled:
+            print("Action was cancelled earlier, nothing will happen.")
+            return  # Don't execute anything if user clicked cancel
+
+        if self.dropped_file:
+            self.message(f"Action confirmed with file: {self.dropped_file}")
+            print(f"Action confirmed with file: {self.dropped_file}")
+        else:
+            self.message("Action confirmed!")
+            print("Action confirmed")
+
+        event()  # Call the passed event handler, potentially with the file path
 
     def _on_cancel(self):
         '''Handler for cancel action'''
@@ -78,15 +99,19 @@ class TerminalCanvas(tk.Canvas):
             return  # Don't execute anything if user clicked cancel
 
         self.cancelled = True  # set flag to True when action is cancelled
+
+        self.destroy_elements()
+
         print("Action cancelled")  # Log or perform any action upon cancellation.
 
-        # Remove cancel and confirm buttons
+    def destroy_elements(self):
         if self.cancel_container:
             self.cancel_container.destroy()
         if self.confirm_container:
             self.confirm_container.destroy()
         if self.input_entry:
             self.input_entry.destroy()
+            return
 
         # Clear the message and remove buttons
         self.message("")
@@ -95,19 +120,13 @@ class TerminalCanvas(tk.Canvas):
         root = context.get_root()
         root.unbind("<b>")
         root.unbind("<a>")
+        root.unbind("<Return>")
 
-        # Optionally, you can also remove other handlers or reset other things here.
-        # For instance, remove other event bindings or perform cleanup.
+        # Unbind <<Drop>> event from root widget to disable drop functionality
+        print("Unbinding <<Drop>> event...")
+        root.dnd_bind('<<Drop>>', None)  # Unbind the drop event
 
-
-    def _on_confirm(self, event):
-        '''Handler for confirm action'''
-        if self.cancelled:
-            print("Action was cancelled earlier, nothing will happen.")
-            return  # Don't execute anything if user clicked cancel
-        self.message("Action confirmed!")
-        print("Action confirmed")  # Log or perform any action upon confirmation.
-        event()
+        print("Elements destroyed and events unbound.")
 
     def user_input(self, message: str, callback, type="text", x=1, y=1):
         """
@@ -120,7 +139,7 @@ class TerminalCanvas(tk.Canvas):
         - x (int) (optional): text x position
         - y (int) (optional): text y position
         """
-        self._on_cancel()
+        self.destroy_elements()
         self.cancelled = False
         width = self.winfo_width()
         height = self.winfo_height()
@@ -144,11 +163,20 @@ class TerminalCanvas(tk.Canvas):
         # callback function that runs when user clicks "Enter"
         def on_enter(event):
             user_input = self.input_var.get()
-            self._on_cancel()
+            self.destroy_elements()
             callback(user_input)  # runs callback with user input
 
         # Bind per la pressione del tasto "Enter"
         self.input_entry.bind("<Return>", on_enter)
+
+
+        def set_focus_when_clicked():
+            if self.input_entry:
+                #il codice entra qui dentro ma focus e focus set non funzionano
+                self.input_entry.focus()
+                self.input_entry.focus_set()
+
+        self.input_entry.bind("<Button-1>", lambda e: set_focus_when_clicked())
 
         # Impostare il focus sull'input per facilitare la digitazione
         self.input_entry.focus()
@@ -249,3 +277,23 @@ def create(container_side="top"):
     terminal_canvas.create_image(75, 10, anchor="nw", image=root.logo_img)
 
     return terminal_canvas
+
+def _setup_file_drop(self, confirm_event):
+    '''Sets up the drag-and-drop event listener.'''
+
+    def on_file_drop(event):
+        """Handle the dropped file."""
+        if self.dropped_file:  # Check if a file was already dropped
+            print(f"File already dropped: {self.dropped_file}... that's weird... line 285 lib/gui/terminal.py")
+        else:
+            self.dropped_file = event.data  # Store the dropped file path
+            print(f"File dropped: {self.dropped_file}")
+
+        # Trigger the confirmation with the file path
+        confirm_event(self.dropped_file)  # Pass the dropped file to the confirmation handler
+
+    # Register drop target and bind event to root
+    root = context.get_root()
+    root.drop_target_register(DND_FILES)
+    print("Registering <<Drop>> event...")
+    root.dnd_bind('<<Drop>>', on_file_drop)  # Bind drop event

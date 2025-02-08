@@ -6,6 +6,8 @@ import apps.sd_flasher._main as sd_app
 import apps.settings._main as settings_app
 import apps.template._main as template_app
 from lib.spruce import app, window_geometry, device
+from tkinterdnd2 import TkinterDnD
+import lib.window_manager as winman
 
 
 def generate_page(root):
@@ -40,7 +42,7 @@ def set_app(new_app, root=None):
         root.geometry(window_geometry)
 
 def main():
-    root = tk.Tk()
+    root = TkinterDnD.Tk()
     context.set_root(root)  # Set root global context
 
     # Start a separate thread to print system info
@@ -48,10 +50,7 @@ def main():
     #info_thread = threading.Thread(target=print_system_info, args=(page,), daemon=True)
     #info_thread.start()
 
-    ui.window()  # Center window at startup
-
-    root.overrideredirect(True)
-    #root.focus_force()
+    winman.window_manager(root)
 
     ui.create_gui(root, app, lambda new_app: set_app(new_app, root))
     generate_page(root)

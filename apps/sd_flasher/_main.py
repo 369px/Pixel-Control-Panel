@@ -21,7 +21,7 @@ def _main(root):
         parent=menu_container,
         text="Update spruce",
         command=lambda: display.confirmation(
-            "Drop an update file or press 'A' to download the latest release",
+            "Drop an update file or press 'A'\nto download the latest release",
             lambda: start_update(sd_selector, display)
         )
     ).create()
@@ -30,8 +30,8 @@ def _main(root):
         parent=menu_container,
         text="Fresh install",
         command=lambda: display.confirmation(
-            "Drop a zip file or press 'A' to download the latest release",
-            lambda: start_installing(sd_selector, display)
+            "Drop a zip file or press 'A' to download the latest release.\nWARNING: This will erase all\nyour SD card data",
+            lambda file=None: start_installing(sd_selector, display, display.dropped_file)
         )
     ).create()
 
@@ -43,13 +43,14 @@ def _main(root):
             "Input password to format SD Card",
             lambda: flash_unbricker(sd_selector, display))
     ).create()
-    '''
+
 
     unbrick_btn = ui.Button(
         parent=menu_container,
-        text="Format",
+        text="Format to FAT32",
         command=lambda: display.confirmation(
-            "Drop an unbricker image or\npress 'A' to download / install it",
+            "Press 'A' to format\nyour SD Card to FAT32",
             lambda: start_formatting(sd_selector, display)
         )
     ).create()
+    '''

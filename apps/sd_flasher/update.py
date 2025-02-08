@@ -17,9 +17,14 @@ def start_update(sd_selector, display):
     download_thread = threading.Thread(target=_download_update, args=(display,))
     download_thread.start()
 
-def get_latest_release_link(display):
+def get_latest_release_link(display,type="user"):
     # File url containing last release link information
     url = "https://raw.githubusercontent.com/spruceUI/spruceui.github.io/refs/heads/main/OTA/spruce"
+
+    if type=="user":
+        file_to_download = "RELEASE_LINK="
+    else:
+        file_to_download = "NIGHTLY_LINK="
 
     try:
         # Download file content
@@ -28,7 +33,7 @@ def get_latest_release_link(display):
 
         # Find row that contains 'RELEASE_LINK='
         for line in response.text.splitlines():
-            if line.startswith("RELEASE_LINK="):
+            if line.startswith(file_to_download):
                 # Extract link from row
                 release_link = line.split("=", 1)[1].strip()
                 return release_link.replace("7z", "zip")

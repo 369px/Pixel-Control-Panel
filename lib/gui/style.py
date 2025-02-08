@@ -257,7 +257,7 @@ def create_gui(root, app, set_app):
 
     transparent_color = "#ffffff"  # init transparent color
     window_color = "#242424"
-    border_color="#121212"
+    border_color="#181818"
 
     root_background = tk.Canvas(root, width=300,
                                 height=369-42, bg="#282828",
@@ -336,7 +336,7 @@ def create_gui(root, app, set_app):
         close_button_canvas = tk.Canvas(window_bar, width=21, height=21, bg=window_color, bd=0, highlightthickness=0)
         close_button_canvas.pack(side="left", padx=0)
 
-        close_btn_border = close_button_canvas.create_line(-1,0,21,0,fill=border_color)
+        close_btn_border = close_button_canvas.create_line(-2,0,21,0,fill=border_color)
 
         # Draw the circular "X" button (initial gray color)
         close_circle_id = close_button_canvas.create_oval(2, 5, 14, 17, fill="#4a4a4a", outline="#242424")
