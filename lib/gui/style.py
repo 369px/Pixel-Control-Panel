@@ -329,7 +329,7 @@ def create_gui(root, app, set_app):
         # --- Open Arc Transparency (left side) ---
         open_arc_canvas = tk.Canvas(window_bar, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         open_arc_canvas.pack(side="left", padx=0, anchor="nw")
-        arc_border(open_arc_canvas,0-1,0-1,42-1,42-1, 90,180)
+        arc_border(open_arc_canvas,0,0,42,42, 90,180)
         open_arc_canvas.create_arc(0, 0, 42, 42, start=90, extent=180, fill=window_color, outline=transparent_color)
 
         # --- Close Button (right side) ---
@@ -359,7 +359,7 @@ def create_gui(root, app, set_app):
         closed_arc_canvas = tk.Canvas(window_bar, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         closed_arc_canvas.pack(side="right", padx=0)
         # Adjusting the arc to make it match the open arc in terms of curvature and positioning
-        arc_border(closed_arc_canvas,-23+1,0-1,20+1,42-1, -90,180)
+        arc_border(closed_arc_canvas,-23,0,20,42, -90,180)
         closed_arc_canvas.create_arc(-23, 0, 20, 42, start=-90, extent=180, fill=window_color, outline=transparent_color)
 
         # Draggable part (adjusted)
@@ -417,13 +417,13 @@ def create_gui(root, app, set_app):
         # --- Open Arc Transparency (left side) ---
         open_arc_canvas = tk.Canvas(bottombar_container, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         open_arc_canvas.pack(side="left", padx=0)
-        arc_border(open_arc_canvas,0-1,-25+1,41-1,19+1, 180,180)
+        arc_border(open_arc_canvas,0,-25,41,19, 180,180)
         open_arc_canvas.create_arc(0, -25, 41, 19, start=180, extent=180, fill=window_color, outline=transparent_color)
 
         # --- Closed Arc Transparency (right side) ---
         closed_arc_canvas = tk.Canvas(bottombar_container, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
         closed_arc_canvas.pack(side="right", padx=0)
-        arc_border(closed_arc_canvas,-21+1,-25+1,20+1,19+1, -180,180)
+        arc_border(closed_arc_canvas,-21,-25,20,19, -180,180)
         closed_arc_canvas.create_arc(-21, -25, 20, 19, start=-180, extent=180, fill=window_color, outline=transparent_color)
 
         bottom_bar_window = tk.Canvas(bottombar_container, height=20, bg=window_color, bd=0,highlightthickness=0)
