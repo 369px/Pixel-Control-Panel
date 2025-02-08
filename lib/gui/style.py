@@ -318,7 +318,7 @@ def create_gui(root, app, set_app):
 
 
     def arc_border(canvas,x1,y1,x2,y2,sstart,eextent):
-        canvas.create_arc(x1, y1, x2, y2, start=sstart, extent=eextent,fill=border_color, outline=transparent_color)
+        canvas.create_arc(x1, y1, x2, y2, start=sstart, extent=eextent,fill=transparent_color, outline=border_color)
 
 
     def generate_window_bar():
