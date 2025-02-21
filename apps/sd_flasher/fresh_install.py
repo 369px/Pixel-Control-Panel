@@ -72,7 +72,7 @@ def _install_update(sd_selector, display, dropped_file):
             download_thread.start()
 
         except Exception as e:
-            display.message("Exception:", e)
+            display.message("Exception: "+str(e))
 
 
 def unzip_file(sd_selector, local_filename, display):
@@ -86,7 +86,8 @@ def unzip_file(sd_selector, local_filename, display):
         display.message("Checking if file is .zip or .7z...")
 
         # Funzione per calcolare il tempo rimanente e il progresso
-        def update_progress(total_size, extracted_size, start_time):
+        def update_progress(total_size, extracted_size, start_time, last_update_time):
+            # Calcola tempo trascorso e velocità di estrazione
             elapsed_time = time.time() - start_time
             speed = extracted_size / elapsed_time if elapsed_time > 0 else 0
             remaining_size = total_size - extracted_size
@@ -94,9 +95,13 @@ def unzip_file(sd_selector, local_filename, display):
             remaining_mb = remaining_size / (1024 * 1024)  # MB rimanenti
             remaining_minutes = remaining_time / 60  # Tempo rimanente in minuti
 
-            # Messaggio di progresso
-            display.message(f"Unzipping file...\n{int(remaining_minutes)} minutes left\n"
-                            f"{int(extracted_size / (1024 * 1024))}/{int(total_size / (1024 * 1024))} MB extracted")
+            # Aggiorna solo se è passato abbastanza tempo (ad esempio ogni 3 secondi)
+            if time.time() - last_update_time > 3:
+                # Messaggio di progresso
+                display.message(f"Unzipping file...\n{int(remaining_minutes)} minutes left\n"
+                                f"{int(extracted_size / (1024 * 1024))}/{int(total_size / (1024 * 1024))} MB extracted")
+                return time.time()  # Restituisci il tempo dell'ultimo aggiornamento
+            return last_update_time
 
         # Estrazione file .zip
         if local_filename.endswith('.zip'):
@@ -105,11 +110,12 @@ def unzip_file(sd_selector, local_filename, display):
                 total_size = sum([file.file_size for file in z.infolist()])  # Calcola la dimensione totale
                 extracted_size = 0
                 start_time = time.time()
+                last_update_time = start_time
 
                 for file in z.infolist():
                     z.extract(file, extract_path)
                     extracted_size += file.file_size
-                    update_progress(total_size, extracted_size, start_time)
+                    last_update_time = update_progress(total_size, extracted_size, start_time, last_update_time)
 
         # Estrazione file .7z
         elif local_filename.endswith('.7z'):
@@ -118,11 +124,12 @@ def unzip_file(sd_selector, local_filename, display):
                 total_size = sum([file.uncompressed for file in z.list()])  # Calcola la dimensione totale
                 extracted_size = 0
                 start_time = time.time()
+                last_update_time = start_time
 
                 for file in z.list():
                     z.extract(targets=[file.filename], path=extract_path)  # file.filename è il nome del file
                     extracted_size += file.uncompressed  # file.size è la dimensione
-                    update_progress(total_size, extracted_size, start_time)
+                    last_update_time = update_progress(total_size, extracted_size, start_time, last_update_time)
 
         else:
             raise ValueError("File format not supported")
@@ -134,4 +141,4 @@ def unzip_file(sd_selector, local_filename, display):
         # eject_sd(sd_selector[0].get(), sd_selector[0], sd_selector, display)
         display.message("Done! Enjoy your spruce\nand check for firmware updates!")
     except Exception as e:
-        display.message("Exception:", e)
+        display.message("Exception:"+str(e))
