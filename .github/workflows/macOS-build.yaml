@@ -46,8 +46,7 @@ jobs:
       - name: Flet Build macOS
         run: |
           flutter config --no-analytics
-          flutter build macos --verbose --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
-
+          flutter build macos --verbose --build-number=$BUILD_NUMBER
 
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4.3.4 # https://github.com/marketplace/actions/upload-a-build-artifact
