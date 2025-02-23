@@ -1,11 +1,10 @@
 from setuptools import setup
 
-APP = ['main.py']
+APP = ['main.py']  # Sostituisci con il nome del tuo script
 DATA_FILES = []
 OPTIONS = {
     'argv_emulation': True,
-    'packages': ['tkinter'],  # Include tkinter nel pacchetto
-    'iconfile': 'res/icon.png',  # Icona dell'app, opzionale
+    'iconfile': 'res/icon.png'  # Icona dell'app, opzionale
 }
 
 setup(
