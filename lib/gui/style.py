@@ -281,7 +281,8 @@ def create_gui(root, app, set_app):
     root.iconphoto(False, icon)
 
     # Keep references to images to avoid garbage collection
-    root.device_image = tk.PhotoImage(file="res/devices/miyooa30.png")
+    root.device_image_path = "res/devices/miyooa30.png"
+    root.device_image = tk.PhotoImage(file=root.device_image_path)
     root.settings_image = tk.PhotoImage(file="res/apps/settings-uns.png")
     root.sd_image = tk.PhotoImage(file="res/apps/sd.png")
     root.connect_image = tk.PhotoImage(file="res/apps/connect.png")
@@ -368,7 +369,7 @@ def create_gui(root, app, set_app):
 
         draggable_border_top = draggable_part.create_line(-1, 0, 369, 0, fill=border_color)
 
-        title_label = draggable_part.create_text(112, 11, text="Control Panel", fill="#777777", font=("Arial", 10, "bold"))
+        title_label = draggable_part.create_text(112, 11, text="Pixel Control Panel", fill="#777777", font=("Arial", 10, "bold"))
 
         draggable_part.bind("<ButtonPress-1>", on_drag_start)
         draggable_part.bind("<B1-Motion>", on_drag_motion)
@@ -388,25 +389,37 @@ def create_gui(root, app, set_app):
         selected_col = "#323232"
         unselected_col = "#242424"
 
+        def on_icon_click(e, object_name):
+            if object_name == "device":
+                # Use a var to keep track of current image path
+                if root.device_image_path == "res/devices/trimuibrick.png":
+                    root.device_image = tk.PhotoImage(file="res/devices/miyooa30.png")
+                    root.device_image_path = "res/devices/miyooa30.png"
+                elif root.device_image_path == "res/devices/miyooa30.png":
+                    root.device_image = tk.PhotoImage(file="res/devices/trimuibrick.png")
+                    root.device_image_path = "res/devices/trimuibrick.png"
+                e.widget.config(image=root.device_image)
+
         # Section we'll use to change between different devices
         device_icon = tk.Label(topbar_container, bg=unselected_col, image=root.device_image)
         device_icon.pack(side="left")
         device_icon.bind("<Enter>", lambda e: on_enter_menu(e, app, "device", "#161616"))
         device_icon.bind("<Leave>", lambda e: on_leave_menu(e, app, "device"))
+        device_icon.bind("<Button-1>", lambda e: on_icon_click(e,"device"))
 
         # Icons attached to the right are the app icons
         settings_icon = tk.Label(topbar_container, bg=selected_col if app == "settings" else unselected_col, image=root.settings_image)
         sd_icon = tk.Label(topbar_container, bg=selected_col if app == "sd" else unselected_col, image=root.sd_image)
-        connect_icon = tk.Label(topbar_container, bg=selected_col if app == "template" else unselected_col, image=root.connect_image)
+        #connect_icon = tk.Label(topbar_container, bg=selected_col if app == "template" else unselected_col, image=root.connect_image)
 
         # Assign callbacks to click events
-        sd_icon.bind("<Button-1>", lambda e: on_icon_click("sd"))
-        settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
-        connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
+        #sd_icon.bind("<Button-1>", lambda e: on_icon_click("sd"))
+        #settings_icon.bind("<Button-1>", lambda e: on_icon_click("settings"))
+        #connect_icon.bind("<Button-1>", lambda e: on_icon_click("template"))
 
         settings_icon.pack(side="right", padx=0)
         sd_icon.pack(side="right", padx=0)
-        connect_icon.pack(side="right", padx=0)
+        #connect_icon.pack(side="right", padx=0)
 
     generate_top_bar()
 

@@ -1,6 +1,6 @@
 from lib.gui import style as ui, terminal
 #from lib.gui.button import BButton
-from apps.sd_flasher.update import start_update
+from apps.sd_flasher.update import begin_updating
 from apps.sd_flasher.format import start_formatting
 from apps.sd_flasher.fresh_install import start_installing
 import apps.sd_flasher.events as events
@@ -22,7 +22,7 @@ def _main(root):
         text="Update spruce",
         command=lambda: display.confirmation(
             "Drop an update file or press 'A'\nto download the latest release",
-            lambda: start_update(sd_selector, display)
+            lambda file: begin_updating(sd_selector, display)
         )
     ).create()
 
