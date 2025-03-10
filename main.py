@@ -1,5 +1,5 @@
 import tkinter as tk
-import threading
+import threading, platform, os, sys, ctypes
 import lib.gui.style as ui
 from lib.gui.context import context
 import apps.sd_flasher._main as sd_app
@@ -9,6 +9,11 @@ from lib.spruce import app, window_geometry, device
 from tkinterdnd2 import TkinterDnD
 import lib.window_manager as winman
 
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    except:
+        return False
 
 def generate_page(root):
     if app == "sd":
@@ -42,6 +47,17 @@ def set_app(new_app, root=None):
         root.geometry(window_geometry)
 
 def main():
+    if platform.system() == 'Windows':
+        if not is_admin():
+            # Usa pythonw.exe per evitare la finestra del terminale
+            pythonw_path = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
+            if not os.path.exists(pythonw_path):
+                pythonw_path = "pythonw.exe"  # Assicurati che pythonw.exe sia nel PATH
+
+            # Rilancia il programma come amministratore senza aprire il terminale
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", pythonw_path, " ".join(sys.argv), None, 1)
+            sys.exit()
+    
     root = TkinterDnD.Tk()
     context.set_root(root)  # Set root global context
 
