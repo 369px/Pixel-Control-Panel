@@ -9,9 +9,10 @@ HWND_TOPMOST = -1
 
 def set_app_windows(root):
     from ctypes import windll
-    
+
     hwnd = windll.user32.GetParent(root.winfo_id())
-    
+    windll.shcore.SetProcessDpiAwareness(1)
+
     # Modifica lo stile della finestra per farla apparire sulla taskbar
     style = windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
     style = style & ~WS_EX_TOOLWINDOW  # Rimuovi il TOOLWINDOW
