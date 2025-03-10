@@ -1,6 +1,5 @@
 import lib.gui.style as ui
 import platform
-from ctypes import windll
 import tkinter as tk
 
 GWL_EXSTYLE = -20
@@ -9,6 +8,8 @@ WS_EX_TOOLWINDOW = 0x00000080
 HWND_TOPMOST = -1
 
 def set_app_windows(root):
+    from ctypes import windll
+    
     hwnd = windll.user32.GetParent(root.winfo_id())
     
     # Modifica lo stile della finestra per farla apparire sulla taskbar
