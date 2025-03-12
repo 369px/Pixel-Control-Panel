@@ -414,7 +414,9 @@ def create_gui(root, app, set_app):
         bottombar_container = tk.Frame(root, bg=transparent_color, height=21, pady=0)
         bottombar_container.pack(side='bottom', fill="x", padx=0)
 
-        draw_window_border("bottom", bottombar_container, transparent_color, window_color, border_color)
+        # Use after to run code that depens on children of bottombar_container
+        bottombar_container.after(100, lambda: draw_window_border("bottom", bottombar_container, transparent_color, window_color, border_color))
+
 
         bottom_bar_window = tk.Canvas(bottombar_container, height=20, bg=window_color, bd=0,highlightthickness=0)
         bottom_bar_window.pack(side="right", padx=0, fill="x")
@@ -458,7 +460,7 @@ def draw_window_border(position, parent, transparent_color, window_color, border
 
     elif position == "bottom":
         if platform.system() == "Windows":
-            parent.child[0].create_line(-1, 21, 369, 21, fill=border_color)
+            parent.winfo_children()[0].create_line(-1, 21, 369, 21, fill=border_color)
         elif platform.system() == "Darwin":
             # --- Open Arc Transparency (left side) ---
             open_arc_canvas = tk.Canvas(parent, width=21, height=21, bg=transparent_color, bd=0, highlightthickness=0)
