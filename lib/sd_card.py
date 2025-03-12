@@ -42,19 +42,22 @@ def get_disk_identifier(volume_path):
             if "Device Identifier" in line:
                 return line.split(":")[1].strip()
     elif system == "Windows":
-        # Windows: usa diskpart per ottenere il numero del disco
         try:
-            # Get disk number using diskpart
-            result = subprocess.run(['diskpart', '/s', 'get_disk_number.txt'], capture_output=True, text=True)
-            for line in result.stdout.splitlines():
-                if volume_path in line:
-                    # Extract disk number from the line
-                    disk_num = line.split()[0]
-                    return disk_num
+            # PowerShell command to get device ID
+            command = f"powershell -Command (Get-WmiObject Win32_LogicalDisk | Where-Object {{$_.DeviceID -eq '{volume_path}'}}).PNPDeviceID"
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            output = result.stdout.strip()
+
+            if output:
+                return output
+            else:
+                print(f"Error: No PNPDeviceID found for {volume_path}")
+                return None
         except Exception as e:
-            print(f"Error getting disk number: {e}")
+            print(f"Error during retrieving device identifier: {e}")
             return None
     return None
+
 
 def get_volume_by_letter(letter):
     try:
@@ -109,32 +112,55 @@ def refresh_sd_devices(sd_select, sd_dropdown, identifier):
             menu.add_command(label=device, command=tk._setit(sd_select, device))
     sd_select.set(selected_sd)
 
+
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()
     identifier = get_disk_identifier(sd_device)
+    
+    if not identifier:
+        print(f"Error: Can't find {sd_device} disk identifier.")
+        terminal.message(f"Error: Can't find {sd_device} disk identifier.")
+        return False
+
     if sd_device != "Click to refresh":
         try:
             if system_os == "Linux":
                 os.system(f"umount {sd_device}")
-                print(f"{sd_device} successfully unmounted on Linux.")
-                terminal.message(f"{sd_device} successfully unmounted on Linux.")
+                print(f"{sd_device} correctly ejected.")
+                terminal.message(f"{sd_device} correctly ejected.")
             elif system_os == "Darwin":
                 os.system(f"diskutil unmount {sd_device}")
-                print(f"{sd_device} successfully unmounted on macOS.")
+                print(f"{sd_device} correctly ejected.")
+                terminal.message(f"{sd_device} correctly ejected.")
             elif system_os == "Windows":
+                # Prima smontiamo il volume
                 os.system(f"mountvol {sd_device} /p")
-                print(f"{sd_device} successfully unmounted on Windows.")
+                print(f"{sd_device} correctly ejected.")
+                terminal.message(f"{sd_device} correctly unmounted.")
+
+                # Ora rimuoviamo il dispositivo usando pnputil
+                try:
+                    # Comando pnputil per rimuovere il dispositivo
+                    pnputil_command = f"pnputil /remove-device \"{identifier}\""
+                    subprocess.run(pnputil_command, check=True, shell=True)
+                    print(f"{sd_device} correctly ejected.")
+                    terminal.message(f"{sd_device} correctly ejected.")
+                except subprocess.CalledProcessError as e:
+                    print(f"Error trying to eject {sd_device}: {e}")
+                    terminal.message(f"Error trying to eject {sd_device}: {e}")
+                   
             else:
-                print(f"Operating system {system_os} not supported for unmounting.")
+                print(f"{system_os} OS not supported for disk ejection.")
                 return False
         except Exception as e:
-            print(f"Error unmounting {sd_device}: {e}")
+            print(f"Error trying to eject {sd_device}: {e}")
             return False
     else:
-        print("No SD found to unmount.")
-        terminal.message("No SD found to unmount.")
+        print("No SD found to eject.")
+        terminal.message("No SD found to eject.")
 
     refresh_sd_devices(sd_select, sd_dropdown, identifier)
+
 
 def get_volume_name(disk_identifier):
     """
@@ -188,10 +214,10 @@ def get_volume_name(disk_identifier):
             return result.stdout.strip()
 
         else:
-            raise NotImplementedError(f"Piattaforma non supportata: {system}")
+            raise NotImplementedError(f"Platform not yet supported: {system}")
 
     except Exception as e:
-        print(f"Errore nel recupero del nome del volume: {e}")
+        print(f"Error trying to get name volume of: {e}")
 
     return None
 
@@ -205,9 +231,9 @@ def check_password(password: str):
             text=True
         )
         if result.returncode == 0:
-            return True  # Password corretta
+            return True  # correct Password 
         else:
-            return False  # Password errata
+            return False  # wrong Password
     except Exception:
         return False
 
@@ -221,15 +247,15 @@ def format_sd_card(sd_path, display, callback, sd_selector):
         return False
     try:
         if os_type == "Windows":
-            # Chiedi all'utente il nome del volume
+            # Ask user volume name
             def on_volume_name_enter(volume_name):
                 if not volume_name or len(volume_name.strip()) == 0:
                     messagebox.showerror("Error", "Volume name cannot be empty!")
                     return
-                volume_name = volume_name.upper()  # Converti in maiuscolo per evitare errori
+                volume_name = volume_name.upper()  # convert uppercase to avoid errors
                 identifier = get_disk_identifier(volume_name)
 
-                # Crea lo script di formattazione
+                # create formatting script
                 script = f"""
                 select volume {sd_path[0]}
                 format fs=fat32 quick label={volume_name}
