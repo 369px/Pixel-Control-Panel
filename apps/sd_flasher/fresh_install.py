@@ -4,8 +4,6 @@ import zipfile, py7zr
 from apps.sd_flasher.update import get_latest_release_link
 from apps.sd_flasher.format import start_formatting
 
-from lib.sd_card import format_sd_card, get_volume_by_letter, eject_sd
-
 def start_installing(sd_selector, display, dropped_file):
     # Start download on a different thread
 

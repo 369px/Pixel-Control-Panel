@@ -1,6 +1,4 @@
-import os
-import platform
-import subprocess
+import os, platform, subprocess, tempfile
 import tkinter as tk
 import ctypes
 from tkinter import simpledialog, messagebox
@@ -12,20 +10,44 @@ def detect_sd_card():
     """Detect connected SD Cards."""
     devices = []
     if platform.system() == "Windows":
-        # Windows specific logic
         bitmask = ctypes.windll.kernel32.GetLogicalDrives()
         for letter in range(26):  # Check from A to Z
             if bitmask & (1 << letter):
                 drive_letter = f"{chr(65 + letter)}:\\"
                 drive_type = ctypes.windll.kernel32.GetDriveTypeW(drive_letter)
                 if drive_type == 2:  # DRIVE_REMOVABLE == 2
-                    devices.append(drive_letter)
+                    try:
+                        volume_name_buffer = ctypes.create_unicode_buffer(1024)
+                        volume_serial = ctypes.c_ulong(0)
+                        max_component_length = ctypes.c_ulong(0)
+                        file_system_flags = ctypes.c_ulong(0)
+                        file_system_name_buffer = ctypes.create_unicode_buffer(1024)
+                        
+                        if ctypes.windll.kernel32.GetVolumeInformationW(
+                            drive_letter,
+                            volume_name_buffer,
+                            ctypes.sizeof(volume_name_buffer),
+                            ctypes.byref(volume_serial),
+                            ctypes.byref(max_component_length),
+                            ctypes.byref(file_system_flags),
+                            file_system_name_buffer,
+                            ctypes.sizeof(file_system_name_buffer)
+                        ):
+                            label = volume_name_buffer.value
+                            # If there is a label, show both letter and label
+                            if label:
+                                devices.append(f"{drive_letter[0]}:\\ ({label})")
+                            else:
+                                devices.append(drive_letter)
+                        else:
+                            devices.append(drive_letter)
+                    except Exception as e:
+                        print(f"Error getting volume name: {e}")
+                        devices.append(drive_letter)
     elif platform.system() == "Darwin":  # macOS
-        # macOS specific logic
         volumes = [os.path.join("/Volumes", d) for d in os.listdir("/Volumes") if os.path.ismount(os.path.join("/Volumes", d))]
         devices.extend(volumes)
     elif platform.system() == "Linux":
-        # Linux specific logic
         user = os.getenv("USER", "default_user")
         media_path = f"/media/{user}"
         if os.path.exists(media_path):
@@ -36,72 +58,40 @@ def get_disk_identifier(volume_path):
     """Returns disk identifier for given volume path."""
     system = platform.system()
 
-    if system == "Darwin":
-        result = subprocess.run(['diskutil', 'info', volume_path], capture_output=True, text=True)
-        for line in result.stdout.splitlines():
-            if "Device Identifier" in line:
-                return line.split(":")[1].strip()
-    elif system == "Windows":
+    if system == "Windows":
         try:
-            # PowerShell command to get device ID
-            command = f"powershell -Command (Get-WmiObject Win32_LogicalDisk | Where-Object {{$_.DeviceID -eq '{volume_path}'}}).PNPDeviceID"
-            result = subprocess.run(command, capture_output=True, text=True, shell=True)
-            output = result.stdout.strip()
-
-            if output:
-                return output
-            else:
-                print(f"Error: No PNPDeviceID found for {volume_path}")
+            drive_letter = volume_path.split(" ")[0]
+            command = f"""
+            $driveLetter = '{drive_letter[0]}'
+            $removableDrives = Get-WmiObject -Query "SELECT * FROM Win32_DiskDrive WHERE InterfaceType='USB'"
+            foreach ($drive in $removableDrives) {{
+                $partitions = Get-WmiObject -Query "ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='$($drive.DeviceID)'}} WHERE AssocClass=Win32_DiskDriveToDiskPartition"
+                foreach ($partition in $partitions) {{
+                    $logicalDisks = Get-WmiObject -Query "ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='$($partition.DeviceID)'}} WHERE AssocClass=Win32_LogicalDiskToPartition"
+                    foreach ($logicalDisk in $logicalDisks) {{
+                        if ($logicalDisk.DeviceID -eq '{drive_letter[0]}') {{
+                            return $drive.PNPDeviceID
+                        }}
+                    }}
+                }}
+            }}
+            """
+            result = subprocess.run(["powershell", "-Command", command], capture_output=True, text=True, shell=True)
+            
+            if result.returncode != 0:
+                print(f"Error in PowerShell command: {result.stderr}")
                 return None
+            
+            return result.stdout.strip()
         except Exception as e:
             print(f"Error during retrieving device identifier: {e}")
             return None
     return None
 
 
-def get_volume_by_letter(letter):
-    try:
-        # Esegui il comando DiskPart per elencare i volumi
-        diskpart_script = "list volume"
-
-        process = subprocess.Popen(
-            ["diskpart"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-
-        # Invia il comando al processo
-        stdout, stderr = process.communicate(input=diskpart_script)
-
-        if stderr:
-            print(f"Errore: {stderr}")
-            return None
-
-        # Filtriamo l'output per ignorare intestazioni e altre righe non pertinenti
-        volume_lines = []
-        for line in stdout.splitlines():
-            line = line.strip()
-            if line and line.startswith("Volume"):  # Solo righe con informazioni sui volumi
-                volume_lines.append(line)
-
-        # Cerca la lettera specificata nei volumi
-        for line in volume_lines:
-            if letter in line:
-                print(f"Volume trovato per {letter}: {line}")
-                return line
-
-        print(f"Volume con lettera {letter} non trovato.")
-        return None
-
-    except Exception as e:
-        print(f"Errore: {str(e)}")
-        return None
-
 def refresh_sd_devices(sd_select, sd_dropdown, identifier):
     sd_devices = detect_sd_card() or ["Click to refresh"]
-    if sd_devices[0] == "Click to refresh":
+    if sd_devices[0] == "Click to refresh" or sd_devices[0] == "None" :
         selected_sd = "Click to refresh"
     else:
         selected_sd = get_volume_name(identifier)
@@ -115,16 +105,36 @@ def refresh_sd_devices(sd_select, sd_dropdown, identifier):
 
 def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
     system_os = platform.system()
-    identifier = get_disk_identifier(sd_device)
-    
-    if not identifier:
-        print(f"Error: Can't find {sd_device} disk identifier.")
-        terminal.message(f"Error: Can't find {sd_device} disk identifier.")
-        return False
+
+    if system_os == "Windows" and "(" in sd_device:
+        drive_letter = sd_device.split(" ")[0]
+    else:
+        drive_letter = sd_device
 
     if sd_device != "Click to refresh":
         try:
-            if system_os == "Linux":
+            if system_os == "Windows":
+                # Modified PowerShell command to properly exit after ejection
+                script = f"""
+                (New-Object -comObject Shell.Application).Namespace(17).ParseName(\"{drive_letter[0]}:\").InvokeVerb(\"Eject\")
+                Start-Sleep -Seconds 1
+                exit
+                """
+                
+                # Use CREATE_NO_WINDOW to avoid GUI freezing
+                result = subprocess.run(
+                    ["powershell", "-Command", script], 
+                    capture_output=True, 
+                    text=True, 
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+                
+                if result.returncode == 0:
+                    terminal.message(f"{drive_letter} successfully ejected.")
+                else:
+                    terminal.message(f"Error ejecting {drive_letter}: {result.stderr}")
+
+            elif system_os == "Linux":
                 os.system(f"umount {sd_device}")
                 print(f"{sd_device} correctly ejected.")
                 terminal.message(f"{sd_device} correctly ejected.")
@@ -132,35 +142,17 @@ def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
                 os.system(f"diskutil unmount {sd_device}")
                 print(f"{sd_device} correctly ejected.")
                 terminal.message(f"{sd_device} correctly ejected.")
-            elif system_os == "Windows":
-                # Prima smontiamo il volume
-                os.system(f"mountvol {sd_device} /p")
-                print(f"{sd_device} correctly ejected.")
-                terminal.message(f"{sd_device} correctly unmounted.")
-
-                # Ora rimuoviamo il dispositivo usando pnputil
-                try:
-                    # Comando pnputil per rimuovere il dispositivo
-                    pnputil_command = f"pnputil /remove-device \"{identifier}\""
-                    subprocess.run(pnputil_command, check=True, shell=True)
-                    print(f"{sd_device} correctly ejected.")
-                    terminal.message(f"{sd_device} correctly ejected.")
-                except subprocess.CalledProcessError as e:
-                    print(f"Error trying to eject {sd_device}: {e}")
-                    terminal.message(f"Error trying to eject {sd_device}: {e}")
-                   
             else:
                 print(f"{system_os} OS not supported for disk ejection.")
                 return False
+            
+            refresh_sd_devices(sd_select, sd_dropdown, get_disk_identifier(sd_device))
         except Exception as e:
             print(f"Error trying to eject {sd_device}: {e}")
-            return False
+            terminal.message(f"Error trying to eject {sd_device}: {e}")
     else:
         print("No SD found to eject.")
         terminal.message("No SD found to eject.")
-
-    refresh_sd_devices(sd_select, sd_dropdown, identifier)
-
 
 def get_volume_name(disk_identifier):
     """
@@ -170,7 +162,7 @@ def get_volume_name(disk_identifier):
         disk_identifier (str): identifier disk (es. '/dev/disk4', '/dev/sdb', 'D:')
 
     Returns:
-        str: name of volume, or None is not found.
+        str: name of volume, or None if not found.
     """
     system = platform.system()
 
@@ -202,6 +194,7 @@ def get_volume_name(disk_identifier):
 
         elif system == "Windows":
             # Usa PowerShell per ottenere informazioni sul disco
+            print(f"disk_identifier[0]: {disk_identifier}")
             result = subprocess.run(
                 [
                     "powershell", "-Command",
@@ -211,6 +204,7 @@ def get_volume_name(disk_identifier):
                 stderr=subprocess.PIPE,
                 text=True
             )
+    
             return result.stdout.strip()
 
         else:
@@ -243,43 +237,58 @@ def format_sd_card(sd_path, display, callback, sd_selector):
     os_type = platform.system()
     # print(sd_path)
     if sd_selector[0].get() == "Click to refresh":
-        display.message("Formatting Click to refresh to FAT32… did you plug-in an sd?")
+        display.message("Formatting ??? to FAT32… did you plug-in an sd?")
         return False
     try:
         if os_type == "Windows":
-            # Ask user volume name
+            # Chiedi all'utente il nome del volume
             def on_volume_name_enter(volume_name):
                 if not volume_name or len(volume_name.strip()) == 0:
                     messagebox.showerror("Error", "Volume name cannot be empty!")
                     return
-                volume_name = volume_name.upper()  # convert uppercase to avoid errors
+                volume_name = volume_name.upper()  # Converti il nome in maiuscolo per evitare errori
                 identifier = get_disk_identifier(volume_name)
 
-                # create formatting script
+                if not identifier:
+                    messagebox.showerror("Error", "Unable to get disk identifier.")
+                    return
+
+                # Crea lo script di formattazione
                 script = f"""
                 select volume {sd_path[0]}
                 format fs=fat32 quick label={volume_name}
                 exit
                 """
+                
                 try:
-                    # Scrivi e esegui il comando DiskPart
+                    # Scrivi ed esegui lo script diskpart
                     with open("format_script.txt", "w") as script_file:
                         script_file.write(script)
-                    subprocess.run("diskpart /s format_script.txt", check=True, shell=True)
+                    
+                    # Esegui diskpart
+                    result = subprocess.run("diskpart /s format_script.txt", check=True, shell=True, capture_output=True, text=True)
+                    
+                    # Debug: stampa l'output di diskpart
+                    print(f"Diskpart Output (stdout): {result.stdout}")
+                    print(f"Diskpart Output (stderr): {result.stderr}")
+                    
                     os.remove("format_script.txt")
-                    # refresh_sd_devices(sd_selector[0], sd_selector[1], identifier)
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
+                    
+                    # Chiamata al callback
                     try:
                         callback_thread = threading.Thread(target=callback)
                         callback_thread.start()
                     except:
                         traceback.print_exc()
                     return True
+
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
+                    print(f"Error while formatting: {e}")
                     return False
 
-            # Chiedi il nome del volume
+            # Chiedi all'utente di inserire un nome valido per il volume
             display.user_input("Enter the name for your new volume:", on_volume_name_enter)
         elif os_type == "Darwin":
             # Get disk identifier for macOS
@@ -334,3 +343,43 @@ def format_sd_card(sd_path, display, callback, sd_selector):
         messagebox.showerror("Error", f"Error while formatting: {e}")
         print(e.stderr)  # Show detailed error
         return False
+
+def run_powershell_script(command):
+    """Esegui uno script PowerShell in background senza aprire la finestra PowerShell."""
+    
+    # Crea un file temporaneo per il comando PowerShell
+    with tempfile.NamedTemporaryFile(suffix=".ps1", delete=False) as temp_file:
+        temp_file.write(command.encode("utf-8"))
+        temp_file.close()  # Chiudiamo il file temporaneo per poterlo eseguire
+
+        # Imposta la politica di esecuzione per consentire l'esecuzione di script non firmati
+        set_policy_command = "Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force"
+        
+        try:
+            # Esegui il comando PowerShell
+            subprocess.run(
+                ["powershell", "-Command", set_policy_command],
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+
+            # Esegui lo script PowerShell in background senza finestra
+            result = subprocess.run(
+                ["powershell.exe", "-ExecutionPolicy", "Unrestricted", "-File", temp_file.name],
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+
+            # Stampa l'output e gli errori (se ci sono)
+            if result.returncode != 0:
+                print(f"PowerShell Error: {result.stderr}")
+                raise Exception(f"Error executing PowerShell script: {result.stderr}")
+
+        except Exception as e:
+            print(f"Error during script execution: {e}")
+        finally:
+            # Rimuovi il file temporaneo dopo l'esecuzione
+            os.remove(temp_file.name)
+
