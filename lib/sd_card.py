@@ -128,7 +128,15 @@ def eject_sd(sd_device, sd_select, sd_dropdown, terminal):
                     text=True, 
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
-                
+
+                # do it 2 times to fully disconnect volume (like E:)
+                result = subprocess.run(
+                    ["powershell", "-Command", script], 
+                    capture_output=True, 
+                    text=True, 
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+
                 if result.returncode == 0:
                     terminal.message(f"{drive_letter} successfully ejected.")
                 else:
