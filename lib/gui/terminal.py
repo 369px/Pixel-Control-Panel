@@ -41,7 +41,7 @@ class TerminalCanvas(tk.Canvas):
         root = context.get_root()
 
         cancel_img_tk = ImageTk.PhotoImage(cancel_image_resized)
-        self.cancel_container = tk.Frame(self, bd=0)  # Cancel button container
+        self.cancel_container = tk.Frame(self, bd=0, bg="#323232")  # Cancel button container
         self.cancel_container.place(x=width - 139, y=height - 22, anchor="nw")
         cancel_img = tk.Label(self.cancel_container, image=cancel_img_tk, bg="#323232")
         cancel_img.pack(side="left")
@@ -49,7 +49,7 @@ class TerminalCanvas(tk.Canvas):
         cancel_text.pack(side="left")
 
         confirm_img_tk = ImageTk.PhotoImage(confirm_image_resized)
-        self.confirm_container = tk.Frame(self, bd=0)  # Confirm button container
+        self.confirm_container = tk.Frame(self, bd=0, bg="#323232")  # Confirm button container
         confirm_img = tk.Label(self.confirm_container, image=confirm_img_tk, bg="#323232")
         confirm_img.pack(side="left")
         confirm_text = tk.Label(self.confirm_container, text="Confirm", font=("Arial", 12), fg="#7c6f64",bg="#323232")
@@ -69,7 +69,9 @@ class TerminalCanvas(tk.Canvas):
 
         # Activate keyboard click events [Cancel (B) / Confirm (A)]
         root.bind("<b>", lambda e: self._on_cancel())
+        root.bind("<B>", lambda e: self._on_cancel())
         root.bind("<a>", lambda e: self._on_confirm(event))
+        root.bind("<A>", lambda e: self._on_confirm(event))
 
         # Set up file drop handling for drag-and-drop event
         _setup_file_drop(self,event)
@@ -119,7 +121,9 @@ class TerminalCanvas(tk.Canvas):
         # Unbind keyboard keys (Cancel - 'B' and Confirm - 'A')
         root = context.get_root()
         root.unbind("<b>")
+        root.unbind("<B>")
         root.unbind("<a>")
+        root.unbind("<A>")
         root.unbind("<Return>")
 
         # Unbind <<Drop>> event from root widget to disable drop functionality
@@ -235,7 +239,7 @@ class TerminalCanvas(tk.Canvas):
         root = context.get_root()
 
         # Custom canvas creation (using TerminalCanvas subclass)
-        terminal_canvas = TerminalCanvas(root, height=155)
+        terminal_canvas = TerminalCanvas(root, height=155, bg="#323232")
 
         # Pack the terminal to the top or bottom as needed
         terminal_canvas.pack(fill="both", expand=True, side="top", pady=2)

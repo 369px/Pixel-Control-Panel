@@ -255,11 +255,6 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                     messagebox.showerror("Error", "Volume name cannot be empty!")
                     return
                 volume_name = volume_name.upper()  # Converti il nome in maiuscolo per evitare errori
-                identifier = get_disk_identifier(volume_name)
-
-                if not identifier:
-                    messagebox.showerror("Error", "Unable to get disk identifier.")
-                    return
 
                 # Crea lo script di formattazione
                 script = f"""
@@ -270,19 +265,35 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                 
                 try:
                     # Scrivi ed esegui lo script diskpart
-                    with open("format_script.txt", "w") as script_file:
+                    script_path = os.path.abspath("format_script.txt")
+                    with open(script_path, "w") as script_file:
                         script_file.write(script)
                     
-                    # Esegui diskpart
-                    result = subprocess.run("diskpart /s format_script.txt", check=True, shell=True, capture_output=True, text=True)
+                    # Esegui diskpart con un metodo che nasconde la finestra
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    
+                    result = subprocess.run(
+                        ["diskpart", "/s", script_path],
+                        capture_output=True,
+                        text=True,
+                        startupinfo=startupinfo
+                    )
                     
                     # Debug: stampa l'output di diskpart
                     print(f"Diskpart Output (stdout): {result.stdout}")
                     print(f"Diskpart Output (stderr): {result.stderr}")
                     
-                    os.remove("format_script.txt")
+                    if result.returncode != 0:
+                        raise subprocess.CalledProcessError(result.returncode, "diskpart", result.stdout, result.stderr)
+                        
+                    os.remove(script_path)  # Rimuovi il file temporaneo dello script
+
                     display.message(f"Formatting completed!\nYour SD card has been formatted with the name '{volume_name}'!")
                     
+                    # Aggiorna la lista dei dispositivi SD
+                    refresh_sd_devices(sd_selector[0], sd_selector[1], sd_path[0])
+
                     # Chiamata al callback
                     try:
                         callback_thread = threading.Thread(target=callback)
@@ -294,6 +305,10 @@ def format_sd_card(sd_path, display, callback, sd_selector):
                 except subprocess.CalledProcessError as e:
                     messagebox.showerror("Error", f"Error while formatting: {e}")
                     print(f"Error while formatting: {e}")
+                    return False
+                except Exception as e:
+                    messagebox.showerror("Error", f"Unexpected error: {e}")
+                    print(f"Unexpected error: {e}")
                     return False
 
             # Chiedi all'utente di inserire un nome valido per il volume
